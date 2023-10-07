@@ -1,50 +1,49 @@
-// disable console on windows for release builds
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
-use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
-use bevy::winit::WinitWindows;
+//use bevy::prelude;
 use bevy::DefaultPlugins;
-use bevy_game::GamePlugin; // ToDo: Replace bevy_game with your new crate name.
-use std::io::Cursor;
-use winit::window::Icon;
+use bevy::prelude::{App, Assets, Camera3dBundle, Color, Commands, default, Mesh, PbrBundle, ResMut, shape, StandardMaterial, Startup, Transform, Update, Vec3, Visibility};
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_vector_shapes::prelude::ShapePlugin;
+use bevy_vector_shapes::prelude::ShapePainter;
+use bevy_vector_shapes::shapes::DiscPainter;
 
 fn main() {
     App::new()
-        .insert_resource(Msaa::Off)
-        .insert_resource(ClearColor(Color::rgb(0.4, 0.4, 0.4)))
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Bevy game".to_string(), // ToDo
-                resolution: (800., 600.).into(),
-                // Bind to canvas included in `index.html`
-                canvas: Some("#bevy".to_owned()),
-                // Tells wasm not to override default event handling, like F5 and Ctrl+R
-                prevent_default_event_handling: false,
-                ..default()
-            }),
-            ..default()
-        }))
-        .add_plugins(GamePlugin)
-        .add_systems(Startup, set_window_icon)
+        .add_plugins(DefaultPlugins)
+        .add_plugins(WorldInspectorPlugin::new())
+        .add_plugins(ShapePlugin::default())
+
+        .add_systems(Startup, init_demo)
+        .add_systems(Update, draw_shape_test)
         .run();
 }
 
-// Sets the icon on windows and X11
-fn set_window_icon(
-    windows: NonSend<WinitWindows>,
-    primary_window: Query<Entity, With<PrimaryWindow>>,
-) {
-    let primary_entity = primary_window.single();
-    let primary = windows.get_window(primary_entity).unwrap();
-    let icon_buf = Cursor::new(include_bytes!(
-        "../build/macos/AppIcon.iconset/icon_256x256.png"
-    ));
-    if let Ok(image) = image::load(icon_buf, image::ImageFormat::Png) {
-        let image = image.into_rgba8();
-        let (width, height) = image.dimensions();
-        let rgba = image.into_raw();
-        let icon = Icon::from_rgba(rgba, width, height).unwrap();
-        primary.set_window_icon(Some(icon));
-    };
+fn init_demo(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
+    //commands.spawn(Camera2dBundle::default());
+    //commands.spawn(Camera3dBundle::default());
+    commands.spawn(Camera3dBundle {
+        transform: Transform::from_translation(Vec3::new(0.0, 0.0, -20.0))
+            .looking_at(Vec3::ZERO, Vec3::Y),
+        ..default()
+    });
+
+
+    // red color
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+        material: materials.add(StandardMaterial {
+            base_color: Color::rgb(1.0, 0.0, 0.0),
+            ..default()
+        }),
+        visibility: Visibility::Visible,
+        ..default()
+    });
+}
+
+fn draw_shape_test(mut painter: ShapePainter) {
+    // Draw a circle
+    painter.thickness = 0.5;
+    painter.hollow = true;
+    painter.color = Color::rgb(0.0, 1.0, 0.0);
+    painter.circle(5.0);
+
 }
