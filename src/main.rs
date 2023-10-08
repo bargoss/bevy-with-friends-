@@ -10,6 +10,7 @@ use bevy_vector_shapes::shapes::DiscPainter;
 use bevy::ecs::system::Query;
 use bevy::input::ButtonState::Pressed;
 use bevy::input::mouse::MouseButtonInput;
+use bevy::prelude::IntoSystemConfigs;
 
 #[derive(Clone, Copy, Default)]
 pub enum XOXGrid{
@@ -80,6 +81,9 @@ fn take_user_input(
                     let position = hit;
                     user_input.clicked = Some(position);
                     info!("Mouse Position: {:?}", position);
+                    let (x, y) = world_to_grid_xy(position);
+                    let index = grid_xy_to_grid_index(x, y);
+                    info!("Mouse Position: {:?}", index);
                 }
             }
         }
@@ -89,7 +93,7 @@ fn take_user_input(
 fn init_demo(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
     // spawn camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_translation(Vec3::new(0.0, 0.0, -20.0))
+        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 20.0))
             .looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
@@ -160,3 +164,19 @@ fn draw_shape_test(mut painter: ShapePainter) {
 }
 
  */
+
+fn world_to_grid_xy(position: Vec3) -> (i32,i32){
+    let x = position.x;
+    let y = position.y;
+
+    let pivot = Vec3::new(-GRID_LEN * 1.5, -GRID_LEN*1.5, 0.0);
+    let delta_from_pivot = position - pivot;
+
+    let x_index = (delta_from_pivot.x / GRID_LEN) as i32;
+    let y_index = (delta_from_pivot.y / GRID_LEN) as i32;
+
+    (x_index, y_index)
+}
+fn grid_xy_to_grid_index(x: i32, y: i32) -> usize{
+    (y * 3 + x) as usize
+}
