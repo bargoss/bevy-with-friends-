@@ -2,14 +2,14 @@ mod utils;
 use utils::*;
 
 use bevy::DefaultPlugins;
-use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, GlobalTransform,
-                    info, Mesh, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup,
-                    Transform, Update, Vec3, Visibility, Window};
+use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec3, Visibility, Window};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_vector_shapes::prelude::{LinePainter, ShapePlugin};
 use bevy_vector_shapes::prelude::ShapePainter;
 use bevy_vector_shapes::shapes::DiscPainter;
 use bevy::ecs::system::Query;
+use bevy::input::ButtonState::Pressed;
+use bevy::input::mouse::MouseButtonInput;
 
 #[derive(Clone, Copy, Default)]
 pub enum XOXGrid{
@@ -23,6 +23,10 @@ pub enum XOXGrid{
 pub struct XOXBoard{
     pub grid: [XOXGrid; 9],
     pub score: u32,
+}
+#[derive(Resource, Default)]
+pub struct UserInput{
+    pub clicked: Option<Vec3>,
 }
 
 
@@ -43,16 +47,19 @@ fn main() {
         .add_plugins(ShapePlugin::default())
 
         .insert_resource(xox_board)
+        .insert_resource(UserInput::default())
 
         .add_systems(Startup, init_demo)
         .add_systems(Update,draw_xox_board)
-        .add_systems(Update, print_mouse_position)
+        .add_systems(Update, take_user_input)
         .run();
 }
 
-fn print_mouse_position(
+fn take_user_input(
     windows: Query<&Window>,
     camera_query: Query<(&Camera, &GlobalTransform)>,
+    mut user_input: ResMut<UserInput>,
+    mut click_events: EventReader<MouseButtonInput>,
 ) {
     let window = windows.single();
     if let Some(screen_pos) = window.cursor_position() {
@@ -65,11 +72,15 @@ fn print_mouse_position(
             point: Vec3::ZERO,
         };
 
+        user_input.clicked = None;
 
         if let Some(ray) = camera.viewport_to_world(transform, screen_pos) {
             if let Some(hit) = ray_plane_intersection(&ray, &plane) {
-                let position = hit;
-                info!("Mouse Position: {:?}", position);
+                if click_events.iter().any(|event| event.button == MouseButton::Left && event.state == Pressed) {
+                    let position = hit;
+                    user_input.clicked = Some(position);
+                    info!("Mouse Position: {:?}", position);
+                }
             }
         }
     }
