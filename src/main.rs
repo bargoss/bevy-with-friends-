@@ -2,7 +2,7 @@ mod utils;
 use utils::*;
 
 use bevy::DefaultPlugins;
-use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec3, Visibility, Window};
+use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GamepadAxis, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec3, Visibility, Window};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_vector_shapes::prelude::{LinePainter, ShapePlugin};
 use bevy_vector_shapes::prelude::ShapePainter;
@@ -30,7 +30,25 @@ pub struct UserInput{
     pub clicked: Option<Vec3>,
 }
 
-
+#[derive(Resource, Default)]
+pub struct GameState {
+    pub current_player: XOXGrid,
+    pub xox_board: XOXBoard,
+}
+/*
+impl Default for GameState {
+    fn default() -> Self {
+        Self
+        {
+            current_player: XOXGrid::X,
+            xox_board:  XOXBoard{
+                grid : [XOXGrid::Empty; 9],
+                score : 1,
+            }
+        }
+    }
+}
+*/
 const GRID_LEN: f32 = 5.0;
 
 fn main() {
@@ -38,17 +56,18 @@ fn main() {
         grid : [XOXGrid::Empty; 9],
         score : 1,
     };
-    xox_board.grid[0] = XOXGrid::X;
-    xox_board.grid[1] = XOXGrid::O;
-    xox_board.grid[2] = XOXGrid::O;
+    //xox_board.grid[0] = XOXGrid::X;
+    //xox_board.grid[1] = XOXGrid::O;
+    //xox_board.grid[2] = XOXGrid::O;
 
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(ShapePlugin::default())
 
-        .insert_resource(xox_board)
+        //.insert_resource(xox_board)
         .insert_resource(UserInput::default())
+        .insert_resource(GameState::default())
 
         .add_systems(Startup, init_demo)
         .add_systems(Update,draw_xox_board)
@@ -61,6 +80,7 @@ fn take_user_input(
     camera_query: Query<(&Camera, &GlobalTransform)>,
     mut user_input: ResMut<UserInput>,
     mut click_events: EventReader<MouseButtonInput>,
+    mut game_state: ResMut<GameState>,
 ) {
     let window = windows.single();
     if let Some(screen_pos) = window.cursor_position() {
@@ -84,13 +104,34 @@ fn take_user_input(
                     let (x, y) = world_to_grid_xy(position);
                     let index = grid_xy_to_grid_index(x, y);
                     info!("Mouse Position: {:?}", index);
+
+                    game_state.xox_board.grid[index] = game_state.current_player;
+
+                    match game_state.current_player {
+                        XOXGrid::X => game_state.current_player = XOXGrid::O,
+                        XOXGrid::O => game_state.current_player = XOXGrid::X,
+                        XOXGrid::Empty => {info!("Cannot Happen!");}
+                    }
+
+
+
                 }
             }
         }
     }
 }
 
-fn init_demo(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) {
+fn init_demo(mut commands: Commands,
+             mut meshes: ResMut<Assets<Mesh>>,
+             mut materials: ResMut<Assets<StandardMaterial>>,
+             mut game_state : ResMut<GameState>,
+) {
+
+
+    game_state.current_player = XOXGrid::X;
+    game_state.xox_board.score = 0;
+    game_state.xox_board.grid = [XOXGrid::Empty; 9];
+
     // spawn camera
     commands.spawn(Camera3dBundle {
         transform: Transform::from_translation(Vec3::new(0.0, 0.0, 20.0))
@@ -110,11 +151,11 @@ fn init_demo(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut mater
     //    ..default()
     //});
 }
-fn draw_xox_board(board: Res<XOXBoard>, mut painter: ShapePainter) {
+fn draw_xox_board(game_state: Res<GameState>, mut painter: ShapePainter) {
     draw_grid(&mut painter);
 
     // iterate
-    board.grid.iter().enumerate().for_each(|(index, grid)| {
+    game_state.xox_board.grid.iter().enumerate().for_each(|(index, grid)| {
         let x = index % 3;
         let y = index / 3;
         let position = Vec3::new(x as f32 * GRID_LEN - GRID_LEN, y as f32 * GRID_LEN - GRID_LEN, 0.0);
