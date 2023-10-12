@@ -1,6 +1,8 @@
 mod utils;
 use utils::*;
 
+mod defender_game;
+
 use bevy::DefaultPlugins;
 use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GamepadAxis, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec3, Visibility, Window};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -11,6 +13,7 @@ use bevy::ecs::system::Query;
 use bevy::input::ButtonState::Pressed;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::IntoSystemConfigs;
+use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
 
 #[derive(Clone, Copy, Default)]
 pub enum XOXGrid{
@@ -64,14 +67,16 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(ShapePlugin::default())
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0))
+        .add_plugins(RapierDebugRenderPlugin::default())
 
-        //.insert_resource(xox_board)
-        .insert_resource(UserInput::default())
-        .insert_resource(GameState::default())
+        .add_plugins(defender_game::plugin::DefenderGamePlugin)
 
-        .add_systems(Startup, init_demo)
-        .add_systems(Update,draw_xox_board)
-        .add_systems(Update, take_user_input)
+        //.insert_resource(UserInput::default())
+        //.insert_resource(GameState::default())
+        //.add_systems(Startup, init_demo)
+        //.add_systems(Update,draw_xox_board)
+        //.add_systems(Update, take_user_input)
         .run();
 }
 
