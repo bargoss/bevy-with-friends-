@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::rapier::prelude::ColliderBuilder;
 use bevy_vector_shapes::prelude::ShapePainter;
 use crate::defender_game::components::*;
 use crate::defender_game::utils;
@@ -21,8 +22,9 @@ pub fn init(mut commands: Commands,
             ..default()
         })
         .insert(PlayerTower{aim_direction: Vec2::new(0.0, 1.0), last_shot_time: 0.0})
-        .insert(Health{hit_points: 100.0, max_hit_points: 100.0}
-    );
+        .insert(Health{hit_points: 100.0, max_hit_points: 100.0})
+        .insert(Collider::ball(0.5))
+    ;
 
 }
 
@@ -43,18 +45,17 @@ pub fn handle_projectile_collision(
 ){
     projectile_query.for_each(|(transform, projectile)|{
         let position = transform.translation;
-        let position2d = Vec2::new(position.x, position.y);
-        //let ray = Ray{
-        //    direction: Vec2::new(projectile.velocity.x, projectile.velocity.y) as Vec3,
-        //    origin: Vec3::new(position.x, position.y, 0.0),
-        //};
 
-        let direction = Vec3::new(projectile.velocity.x, projectile.velocity.y, 0.0);
-        let direction2d = Vec2::new(direction.x, direction.y);
-        let origin = Vec3::new(position.x, position.y, 0.0);
-        let origin2d = Vec2::new(origin.x, origin.y);
+        let direction = Vec2::new(projectile.velocity.x, projectile.velocity.y);
+        let origin = Vec2::new(position.x, position.y);
 
-        let raycast_result = rapier_context.cast_ray(origin2d, direction2d, 0.0, false, Default::default());
+        let raycast_result = rapier_context.cast_ray(origin, direction, 0.0, false, Default::default());
+        if let Some(hit) = raycast_result {
+            let hit_entity = hit.0;
+            let hit_distance = hit.1;
+
+            info!("projectile hit entity: {:?}, distance: {:?}", hit_entity, hit_distance);
+        }
     });
 }
 

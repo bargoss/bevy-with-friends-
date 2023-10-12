@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::Collider;
 use bevy_vector_shapes::prelude::{DiscPainter, LinePainter, ShapePainter};
 use crate::defender_game::components::*;
 
@@ -10,7 +11,7 @@ pub fn spawn_enemy(pos : Vec2, commands: &mut Commands){
         })
         .insert(Enemy::default())
         .insert(Health::new(10.0))
-
+        .insert(Collider::ball(0.5))
     ;
 }
 
