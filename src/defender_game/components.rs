@@ -21,7 +21,7 @@ impl Health{
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct Projectile{
     pub damage: f32,
     pub velocity: Vec2,
@@ -32,6 +32,7 @@ pub struct Projectile{
 #[derive(Component)]
 pub struct PlayerTower{
     pub aim_direction: Vec2,
+    pub shoot_input: bool,
     pub last_shot_time: f32,
 }
 

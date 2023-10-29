@@ -4,7 +4,7 @@ use utils::*;
 mod defender_game;
 
 use bevy::DefaultPlugins;
-use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GamepadAxis, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec3, Visibility, Window};
+use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GamepadAxis, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec2, Vec3, Visibility, Window};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_vector_shapes::prelude::{LinePainter, ShapePlugin};
 use bevy_vector_shapes::prelude::ShapePainter;
@@ -30,7 +30,9 @@ pub struct XOXBoard{
 }
 #[derive(Resource, Default)]
 pub struct UserInput{
-    pub clicked: Option<Vec3>,
+    pub mouse_pos : Vec3,
+    pub mouse_pos_2d : Vec2,
+    pub left_click : bool,
 }
 
 #[derive(Resource, Default)]
@@ -85,7 +87,6 @@ fn take_user_input(
     camera_query: Query<(&Camera, &GlobalTransform)>,
     mut user_input: ResMut<UserInput>,
     mut click_events: EventReader<MouseButtonInput>,
-    mut game_state: ResMut<GameState>,
 ) {
     let window = windows.single();
     if let Some(screen_pos) = window.cursor_position() {
@@ -98,30 +99,17 @@ fn take_user_input(
             point: Vec3::ZERO,
         };
 
-        user_input.clicked = None;
+        user_input.left_click = false;
 
         if let Some(ray) = camera.viewport_to_world(transform, screen_pos) {
             if let Some(hit) = ray_plane_intersection(&ray, &plane) {
-                if click_events.iter().any(|event| event.button == MouseButton::Left && event.state == Pressed) {
-                    let position = hit;
-                    user_input.clicked = Some(position);
-                    info!("Mouse Position: {:?}", position);
-                    let (x, y) = world_to_grid_xy(position);
-                    let index = grid_xy_to_grid_index(x, y);
-                    info!("Mouse Position: {:?}", index);
-
-                    game_state.xox_board.grid[index] = game_state.current_player;
-
-                    match game_state.current_player {
-                        XOXGrid::X => game_state.current_player = XOXGrid::O,
-                        XOXGrid::O => game_state.current_player = XOXGrid::X,
-                        XOXGrid::Empty => {info!("Cannot Happen!");}
-                    }
-
-
-
-                }
+                user_input.mouse_pos = hit;
+                user_input.mouse_pos_2d = Vec2::new(hit.x, hit.y);
             }
+        }
+
+        if click_events.iter().any(|event| event.button == MouseButton::Left && event.state == Pressed) {
+            user_input.left_click = true;
         }
     }
 }

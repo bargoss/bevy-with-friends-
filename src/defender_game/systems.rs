@@ -1,9 +1,12 @@
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use bevy_rapier2d::rapier::prelude::ColliderBuilder;
 use bevy_vector_shapes::prelude::ShapePainter;
 use crate::defender_game::components::*;
+use crate::defender_game::events::ProjectileCollisionEvent;
 use crate::defender_game::utils;
+use crate::UserInput;
 
 pub fn init(mut commands: Commands,
             mut meshes: ResMut<Assets<Mesh>>,
@@ -21,7 +24,7 @@ pub fn init(mut commands: Commands,
         .insert(Transform{
             ..default()
         })
-        .insert(PlayerTower{aim_direction: Vec2::new(0.0, 1.0), last_shot_time: 0.0})
+        .insert(PlayerTower{aim_direction: Vec2::new(0.0, 1.0), shoot_input: false, last_shot_time: 0.0})
         .insert(Health{hit_points: 100.0, max_hit_points: 100.0})
         .insert(Collider::ball(0.5))
     ;
@@ -38,10 +41,10 @@ pub fn handle_projectile_movement(
     });
 }
 
-pub fn handle_projectile_collision(
+pub fn projectile_collision_events(
     projectile_query: Query<(&Transform, &Projectile)>,
-    mut enemy_query: Query<(&mut Health, &Transform, &mut Enemy)>,
     rapier_context: Res<RapierContext>,
+    mut event_writer: EventWriter<ProjectileCollisionEvent>,
 ){
     projectile_query.for_each(|(transform, projectile)|{
         let position = transform.translation;
@@ -54,9 +57,29 @@ pub fn handle_projectile_collision(
             let hit_entity = hit.0;
             let hit_distance = hit.1;
 
+            event_writer.send(ProjectileCollisionEvent{
+                projectile: projectile.clone(),
+                projectile_position: Vec2::new(position.x, position.y),
+                collided_entity: hit_entity,
+            });
             info!("projectile hit entity: {:?}, distance: {:?}", hit_entity, hit_distance);
         }
     });
+}
+
+pub fn handle_projectile_enemy_collisions(
+    mut commands: Commands,
+    mut enemy_query: Query<(&mut Enemy, &mut Health, &Transform)>,
+    mut projectile_collision_event_reader: EventReader<ProjectileCollisionEvent>,
+){
+    projectile_collision_event_reader.
+}
+
+pub fn draw_projectile(
+
+)
+{
+
 }
 
 pub fn draw_player_tower(
@@ -64,4 +87,31 @@ pub fn draw_player_tower(
     mut painter: ShapePainter,
 ){
     utils::draw_o(Vec3::new(0.0, 0.0, 0.0), &mut painter);
+}
+
+pub fn update_player_tower_input(
+    mut player_tower_query: Query<(&mut PlayerTower, &Transform)>,
+    user_input : Res<UserInput>,
+){
+    player_tower_query.for_each_mut(|(mut player_tower, transform)|{
+        let mouse_position = user_input.mouse_pos_2d;
+        let tower_position = transform.translation.xy();
+        let aim_direction = (mouse_position - tower_position).normalize_or_zero();
+
+        player_tower.aim_direction = aim_direction;
+        player_tower.shoot_input = user_input.left_click;
+    });
+}
+
+pub fn update_player_tower(
+    mut player_tower_query: Query<(&mut PlayerTower, &Transform)>,
+){
+
+}
+
+pub fn shoot_bullet(
+    shoot_velocity : Vec2,
+    mut commands: Commands,
+){
+
 }
