@@ -1,10 +1,9 @@
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::rapier::prelude::ColliderBuilder;
 use bevy_vector_shapes::prelude::ShapePainter;
 use crate::defender_game::components::*;
-use crate::defender_game::events::ProjectileCollisionEvent;
+use crate::defender_game::events::*;
 use crate::defender_game::utils;
 use crate::UserInput;
 
@@ -66,13 +65,32 @@ pub fn projectile_collision_events(
         }
     });
 }
+pub fn enemy_death_system(
+    mut commands: Commands,
+    mut health_query: Query<(&Health, &Enemy, &Transform, Entity)>,
+){
+    health_query.for_each_mut(|(mut health, enemy, transform, entity)|{
+        if health.hit_points <= 0.0 {
+            commands.entity(entity).despawn();
+        }
+    });
+}
 
 pub fn handle_projectile_enemy_collisions(
     mut commands: Commands,
-    mut enemy_query: Query<(&mut Enemy, &mut Health, &Transform)>,
+    mut enemy_query: Query<(&Enemy, &mut Health, &Transform)>,
     mut projectile_collision_event_reader: EventReader<ProjectileCollisionEvent>,
 ){
-    projectile_collision_event_reader.
+    projectile_collision_event_reader.iter().for_each(|event|{
+        let projectile = event.projectile.clone();
+        let projectile_position = event.projectile_position;
+        let collided_entity = event.collided_entity;
+
+        let _ = enemy_query.get_mut(collided_entity).map(|(enemy, mut health, transform)| {
+            health.hit_points -= projectile.damage;
+            info!("enemy hit, health: {:?}", health.hit_points);
+        });
+    });
 }
 
 pub fn draw_projectile(

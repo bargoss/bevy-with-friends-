@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::defender_game::components::Projectile;
+use crate::defender_game::components::*;
 
 // projectile collision event
 #[derive(Event)]

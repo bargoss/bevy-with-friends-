@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 // bevy component
-#[derive(Component, Default)]
+#[derive(Component, Default, Clone)]
 pub struct Enemy{
     pub last_attack_time : f32,
 }
@@ -16,7 +16,7 @@ impl Health{
     pub fn new(hit_points: f32) -> Self{
         Health{
             max_hit_points : hit_points,
-            hit_points
+            hit_points,
         }
     }
 }
