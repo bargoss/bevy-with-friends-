@@ -67,9 +67,9 @@ pub fn projectile_collision_events(
 }
 pub fn enemy_death_system(
     mut commands: Commands,
-    mut health_query: Query<(&Health, &Enemy, &Transform, Entity)>,
+    health_query: Query<(&Health, &Enemy, &Transform, Entity)>,
 ){
-    health_query.for_each_mut(|(mut health, enemy, transform, entity)|{
+    health_query.for_each(|(health, _enemy, _transform, entity)|{
         if health.hit_points <= 0.0 {
             commands.entity(entity).despawn();
         }
