@@ -1,5 +1,6 @@
 use bevy::app::App;
 use bevy::prelude::{Plugin, Startup, Update};
+use bevy_framepace::FramepacePlugin;
 use crate::defender_game::events::*;
 use crate::defender_game::resources::*;
 use crate::defender_game::systems::*;
