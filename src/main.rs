@@ -29,13 +29,6 @@ pub struct XOXBoard{
     pub score: u32,
 }
 #[derive(Resource, Default)]
-pub struct UserInput{
-    pub mouse_pos : Vec3,
-    pub mouse_pos_2d : Vec2,
-    pub left_click : bool,
-}
-
-#[derive(Resource, Default)]
 pub struct GameState {
     pub current_player: XOXGrid,
     pub xox_board: XOXBoard,
@@ -80,38 +73,6 @@ fn main() {
         //.add_systems(Update,draw_xox_board)
         //.add_systems(Update, take_user_input)
         .run();
-}
-
-fn take_user_input(
-    windows: Query<&Window>,
-    camera_query: Query<(&Camera, &GlobalTransform)>,
-    mut user_input: ResMut<UserInput>,
-    mut click_events: EventReader<MouseButtonInput>,
-) {
-    let window = windows.single();
-    if let Some(screen_pos) = window.cursor_position() {
-        let cam_entity = camera_query.single();
-        let camera = cam_entity.0;
-        let transform = cam_entity.1;
-
-        let plane = Plane{
-            normal: Vec3::Z,
-            point: Vec3::ZERO,
-        };
-
-        user_input.left_click = false;
-
-        if let Some(ray) = camera.viewport_to_world(transform, screen_pos) {
-            if let Some(hit) = ray_plane_intersection(&ray, &plane) {
-                user_input.mouse_pos = hit;
-                user_input.mouse_pos_2d = Vec2::new(hit.x, hit.y);
-            }
-        }
-
-        if click_events.iter().any(|event| event.button == MouseButton::Left && event.state == Pressed) {
-            user_input.left_click = true;
-        }
-    }
 }
 
 fn init_demo(mut commands: Commands,

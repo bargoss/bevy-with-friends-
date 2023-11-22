@@ -30,13 +30,12 @@ pub fn shoot_projectile(pos : Vec2, vel: Vec2, commands: &mut Commands){
     ;
 }
 
-
-pub fn draw_o(position : Vec3, painter: &mut ShapePainter){
+pub fn draw_o(position : Vec3, radius: f32, color: Color, painter: &mut ShapePainter){
     painter.thickness = 0.5;
     painter.hollow = true;
-    painter.color = Color::rgb(0.0, 1.0, 0.0);
+    painter.color = color;
     painter.transform = Transform::from_translation(position);
-    painter.circle(1.0);
+    painter.circle(radius);
 }
 pub fn draw_x(position : Vec3, painter: &mut ShapePainter){
     painter.thickness = 0.5;
@@ -47,4 +46,12 @@ pub fn draw_x(position : Vec3, painter: &mut ShapePainter){
     let line_len = 1.0;
     painter.line(Vec3::new(-line_len, line_len, 0.0), Vec3::new(line_len, -line_len, 0.0));
     painter.line(Vec3::new(line_len, line_len, 0.0), Vec3::new(-line_len, -line_len, 0.0));
+}
+
+pub fn draw_line(start : Vec3, end: Vec3, thickness: f32, color: Color, painter: &mut ShapePainter){
+    painter.thickness = thickness;
+    painter.hollow = false;
+    painter.color = color;
+    painter.transform = Transform::from_translation(Vec3::ZERO);
+    painter.line(start, end);
 }

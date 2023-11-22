@@ -36,6 +36,12 @@ pub struct PlayerTower{
     pub last_shot_time: f32,
 }
 
+impl PlayerTower {
+    pub fn aim_direction_3d(&self) -> Vec3{
+        Vec3::new(self.aim_direction.x, self.aim_direction.y, 0.0)
+    }
+}
+
 //#[derive(Bundle)]
 //pub struct PlayerTowerBundle{
 //    pub player_tower: PlayerTower,
