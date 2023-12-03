@@ -19,7 +19,7 @@ use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsP
 const GRID_LEN: f32 = 5.0;
 
 fn main() {
-    let limiter = bevy_framepace::Limiter::from_framerate(60.0);
+    let limiter = bevy_framepace::Limiter::from_framerate(6000.0);
     let framepace_settings = bevy_framepace::FramepaceSettings{
         limiter
     };
@@ -30,8 +30,8 @@ fn main() {
         .add_plugins(ShapePlugin::default())
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0))
         .add_plugins(RapierDebugRenderPlugin::default())
-        //.add_plugins(FramepacePlugin)
-        //.insert_resource(framepace_settings)
+        .add_plugins(FramepacePlugin)
+        .insert_resource(framepace_settings)
         .add_plugins(defender_game::plugin::DefenderGamePlugin)
 
         //.insert_resource(UserInput::default())

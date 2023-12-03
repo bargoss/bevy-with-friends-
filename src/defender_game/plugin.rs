@@ -12,6 +12,8 @@ impl Plugin for DefenderGamePlugin{
         app
             .add_event::<ProjectileCollisionEvent>()
             .insert_resource(UserInput::default())
+            .insert_resource(DefenderGameConfig::default())
+
             .add_systems(Startup, init)
             .add_systems(Update, (
                 // input:
@@ -28,10 +30,15 @@ impl Plugin for DefenderGamePlugin{
 
                 // game logic, enemy:
                 enemy_death_system,
+                enemy_spawner_system,
+
+                // game logic
+                life_span_system,
 
                 // display:
-                draw_player_tower,
-                draw_projectile,
+                draw_player_towers,
+                draw_projectiles,
+                draw_enemies,
             ));
     }
 }

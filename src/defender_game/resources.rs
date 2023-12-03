@@ -4,5 +4,19 @@ use bevy::prelude::{Resource, Vec2, Vec3};
 pub struct UserInput{
     pub mouse_pos : Vec3,
     pub mouse_pos_2d : Vec2,
-    pub left_click : bool,
+    pub left_click: bool,
+}
+
+#[derive(Resource)]
+pub struct DefenderGameConfig{
+    pub enemy_spawn_interval : f32,
+    pub spawn_radius : f32,
+}
+impl Default for DefenderGameConfig{
+    fn default() -> Self{
+        DefenderGameConfig{
+            enemy_spawn_interval : 2.0,
+            spawn_radius : 10.0,
+        }
+    }
 }

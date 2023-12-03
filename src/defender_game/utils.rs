@@ -1,34 +1,8 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::Collider;
 use bevy_vector_shapes::prelude::{DiscPainter, LinePainter, ShapePainter};
+use rand::Rng;
 use crate::defender_game::components::*;
-
-pub fn spawn_enemy(pos : Vec2, commands: &mut Commands){
-    commands.spawn_empty()
-        .insert(Transform{
-            translation: Vec3::new(pos.x, pos.y, 0.0),
-            ..default()
-        })
-        .insert(Enemy::default())
-        .insert(Health::new(10.0))
-        .insert(Collider::ball(0.5))
-    ;
-}
-
-pub fn shoot_projectile(pos : Vec2, vel: Vec2, commands: &mut Commands){
-    commands.spawn_empty()
-        .insert(Transform{
-            translation: Vec3::new(pos.x, pos.y, 0.0),
-            ..default()
-        })
-        .insert(Projectile{
-            damage: 1.0,
-            velocity: vel,
-            max_range: 50.0,
-            distance_travelled: 0.0,
-        })
-    ;
-}
 
 pub fn draw_o(position : Vec3, radius: f32, color: Color, painter: &mut ShapePainter){
     painter.thickness = 0.5;
@@ -54,4 +28,24 @@ pub fn draw_line(start : Vec3, end: Vec3, thickness: f32, color: Color, painter:
     painter.color = color;
     painter.transform = Transform::from_translation(Vec3::ZERO);
     painter.line(start, end);
+}
+//let spawn_position = utils::random_point_in_circle(transform.translation.xy(), spawn_radius);
+pub fn random_point_in_circle_2d(center: Vec2, radius: f32) -> Vec2{
+    let mut rng = rand::thread_rng();
+    let r = rng.gen_range(0.0..radius);
+    let theta = rng.gen_range(0.0..2.0 * std::f32::consts::PI);
+    Vec2::new(
+        center.x + r * theta.cos(),
+        center.y + r * theta.sin(),
+    )
+}
+pub fn random_point_in_circle(center: Vec3, radius: f32) -> Vec3{
+    let mut rng = rand::thread_rng();
+    let r = rng.gen_range(0.0..radius);
+    let theta = rng.gen_range(0.0..2.0 * std::f32::consts::PI);
+    Vec3::new(
+        center.x + r * theta.cos(),
+        center.y + r * theta.sin(),
+        center.z,
+    )
 }
