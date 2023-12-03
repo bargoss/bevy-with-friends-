@@ -1,3 +1,4 @@
+use bevy::input::ButtonState;
 use bevy::input::ButtonState::Pressed;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::math::Vec3Swizzles;
@@ -217,7 +218,7 @@ pub fn update_player_tower_input_system(
         let aim_direction = (mouse_position - tower_position).normalize_or_zero();
 
         player_tower.aim_direction = aim_direction;
-        player_tower.shoot_input = user_input.left_click;
+        player_tower.shoot_input = user_input.left_button;
     });
 }
 
@@ -308,7 +309,6 @@ pub fn take_user_input_system(
                 point: Vec3::ZERO,
             };
 
-            user_input.left_click = false;
 
             if let Some(ray) = camera.viewport_to_world(transform, screen_pos) {
                 if let Some(hit) = ray_plane_intersection(&ray, &plane) {
@@ -317,8 +317,21 @@ pub fn take_user_input_system(
                 }
             }
 
-            if click_events.read().any(|event| event.button == MouseButton::Left && event.state == Pressed) {
-                user_input.left_click = true;
+            for event in click_events.read() {
+                if event.button == MouseButton::Left {
+                    match event.state {
+                        Pressed => {
+                            user_input.left_button_down = true;
+                            user_input.left_button = true;
+                        }
+                        ButtonState::Released => {
+                            user_input.left_button_up = true;
+                            user_input.left_button = false;
+                        }
+                    }
+                }
+
+
             }
 
 

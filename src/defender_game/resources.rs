@@ -4,7 +4,9 @@ use bevy::prelude::{Resource, Vec2, Vec3};
 pub struct UserInput{
     pub mouse_pos : Vec3,
     pub mouse_pos_2d : Vec2,
-    pub left_click: bool,
+    pub left_button: bool,
+    pub left_button_up: bool,
+    pub left_button_down: bool,
 }
 
 #[derive(Resource)]
