@@ -2,6 +2,7 @@ mod utils;
 use utils::*;
 
 mod defender_game;
+mod space_game;
 
 use bevy::DefaultPlugins;
 use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GamepadAxis, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec2, Vec3, Visibility, Window};
@@ -19,8 +20,12 @@ use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsP
 const GRID_LEN: f32 = 5.0;
 
 fn main() {
+    //run_defender_game();
+}
+
+fn run_defender_game() {
     let limiter = bevy_framepace::Limiter::from_framerate(6000.0);
-    let framepace_settings = bevy_framepace::FramepaceSettings{
+    let framepace_settings = bevy_framepace::FramepaceSettings {
         limiter
     };
 
@@ -33,11 +38,5 @@ fn main() {
         .add_plugins(FramepacePlugin)
         .insert_resource(framepace_settings)
         .add_plugins(defender_game::plugin::DefenderGamePlugin)
-
-        //.insert_resource(UserInput::default())
-        //.insert_resource(GameState::default())
-        //.add_systems(Startup, init_demo)
-        //.add_systems(Update,draw_xox_board)
-        //.add_systems(Update, take_user_input)
         .run();
 }
