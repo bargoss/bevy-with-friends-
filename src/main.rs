@@ -21,6 +21,11 @@ const GRID_LEN: f32 = 5.0;
 
 fn main() {
     //run_defender_game();
+    run_space_game();
+}
+
+fn run_space_game() {
+
 }
 
 fn run_defender_game() {

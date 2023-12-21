@@ -20,3 +20,4 @@ bevy-inspector-egui = "0.21.0"
 bevy_vector_shapes = "0.6.0"
 bevy_framepace = "0.14.1"
 rand = { version = "0.8.5", features = [] }
+bevy_replicon = "0.18.0"
