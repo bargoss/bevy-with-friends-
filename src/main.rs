@@ -4,6 +4,9 @@ use utils::*;
 mod defender_game;
 mod space_game;
 
+mod netcode;
+mod netcode_extensions;
+
 use bevy::DefaultPlugins;
 use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GamepadAxis, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec2, Vec3, Visibility, Window};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
