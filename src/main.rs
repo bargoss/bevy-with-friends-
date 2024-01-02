@@ -2,6 +2,7 @@ mod utils;
 use utils::*;
 
 mod defender_game;
+mod lightyear_demo;
 
 use bevy::DefaultPlugins;
 use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GamepadAxis, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec2, Vec3, Visibility, Window};
