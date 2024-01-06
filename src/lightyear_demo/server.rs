@@ -9,9 +9,9 @@ use super::shared::*;
 
 // define a bevy plugin
 
-pub struct DemoClientPlugin;
+pub struct DemoServerPlugin;
 
-impl Plugin for DemoClientPlugin {
+impl Plugin for DemoServerPlugin {
     fn build(&self, app: &mut App) {
         let addr = SocketAddrV4::new(Ipv4Addr::LOCALHOST, SERVER_PORT);
         // You can add a link conditioner to simulate network conditions
@@ -24,7 +24,6 @@ impl Plugin for DemoClientPlugin {
             .with_conditioner(link_conditioner);
 
         app
-            .add_plugins(MinimalPlugins)
             .add_plugins(
                 ServerPlugin::new(PluginConfig::new(
                     ServerConfig::default(),

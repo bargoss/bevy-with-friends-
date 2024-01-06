@@ -4,41 +4,35 @@ use utils::*;
 mod defender_game;
 mod lightyear_demo;
 
-use bevy::DefaultPlugins;
-use bevy::prelude::{App, Assets, Camera, Camera3dBundle, Color, Commands, default, EventReader, GamepadAxis, GlobalTransform, info, Mesh, MouseButton, PbrBundle, Res, ResMut, Resource, shape, StandardMaterial, Startup, Transform, Update, Vec2, Vec3, Visibility, Window};
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_vector_shapes::prelude::{LinePainter, ShapePlugin};
-use bevy_vector_shapes::prelude::ShapePainter;
-use bevy_vector_shapes::shapes::DiscPainter;
-use bevy::ecs::system::Query;
-use bevy::input::ButtonState::Pressed;
-use bevy::input::mouse::MouseButtonInput;
+use bevy::{DefaultPlugins, MinimalPlugins};
+use bevy::prelude::*;
+
+use bevy_vector_shapes::prelude::*;
 use bevy::prelude::IntoSystemConfigs;
-use bevy_framepace::FramepacePlugin;
-use bevy_rapier2d::prelude::{NoUserData, RapierDebugRenderPlugin, RapierPhysicsPlugin};
+use crate::lightyear_demo::server::DemoServerPlugin;
+use crate::lightyear_demo::client::DemoClientPlugin;
 
 const GRID_LEN: f32 = 5.0;
 
-fn main() {
-    let limiter = bevy_framepace::Limiter::from_framerate(6000.0);
-    let framepace_settings = bevy_framepace::FramepaceSettings{
-        limiter
-    };
-
+fn run_client() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(WorldInspectorPlugin::new())
-        .add_plugins(ShapePlugin::default())
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0))
-        .add_plugins(RapierDebugRenderPlugin::default())
-        .add_plugins(FramepacePlugin)
-        .insert_resource(framepace_settings)
-        .add_plugins(defender_game::plugin::DefenderGamePlugin)
-
-        //.insert_resource(UserInput::default())
-        //.insert_resource(GameState::default())
-        //.add_systems(Startup, init_demo)
-        //.add_systems(Update,draw_xox_board)
-        //.add_systems(Update, take_user_input)
+        .add_plugins(DemoClientPlugin)
         .run();
+}
+fn run_server() {
+    App::new()
+        .add_plugins(MinimalPlugins)
+        .add_plugins(DemoServerPlugin)
+        .run();
+}
+
+fn main() {
+    // create a new thread
+    let server_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+        run_server();
+        Ok(())
+    });
+
+    run_client();
 }
