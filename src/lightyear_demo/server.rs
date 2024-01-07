@@ -51,8 +51,13 @@ impl Plugin for DemoServerPlugin {
             .add_plugins(SharedPlugin)
             .init_resource::<Global>()
 
-            .add_systems(FixedUpdate, handle_simulated_tag_server.in_set(FixedUpdateMainSet::Pull))
-            .add_systems(FixedUpdate, handle_pawn_input_server.in_set(FixedUpdateMainSet::Pull))
+            .add_systems(
+                FixedUpdate,
+                (
+                    handle_simulated_tag_server,
+                    handle_pawn_input_server
+                ).in_set(FixedUpdateMainSet::Pull)
+            )
 
             .add_systems(FixedUpdate, update_time_server.in_set(FixedUpdateMainSet::Pull))
 

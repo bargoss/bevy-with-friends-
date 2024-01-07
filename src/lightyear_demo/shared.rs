@@ -1,7 +1,7 @@
 use std::time::Duration;
 use bevy::input::Input;
 use bevy::log::Level;
-use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs, Commands, Transform, Without, Query, TransformBundle, ResMut, KeyCode, Res, With, EventReader, SystemSet};
+use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs, Commands, Transform, Without, Query, TransformBundle, ResMut, KeyCode, Res, With, EventReader, SystemSet, Resource};
 use bevy::utils::EntityHashSet;
 use derive_more::{Add, Mul};
 use lightyear::client::events::InputEvent;
@@ -141,6 +141,8 @@ impl Plugin for SharedPlugin {
     MainFlush,
     */
     fn build(&self, app: &mut App) {
+        app.insert_resource(GlobalTime{simulation_tick:Tick(0)});
+
         app.configure_sets(
             FixedUpdate,
             (
@@ -261,14 +263,7 @@ pub(crate) fn movement(
 }
 */
 //app.add_systems(FixedUpdate, movement.in_set(FixedUpdateSet::Main));
-pub fn set_pawn_inputs_server(
-    mut pawn_query: Query<&mut PlayerPosition>,
-    mut input_reader: EventReader<InputEvent<Inputs>>,
-    global: Res<Global>,
-    server: Res<Server<MyProtocol>>,
-){
 
-}
 
 
 //pub fn sync_input_component_server<T>(
@@ -281,3 +276,9 @@ pub fn set_pawn_inputs_server(
 //        client.add_input_with_context(*player_id, input.clone());
 //    }
 //}
+
+
+#[derive(Resource, Default)]
+pub struct GlobalTime{
+    pub simulation_tick: Tick,
+}

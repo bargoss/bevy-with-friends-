@@ -11,7 +11,7 @@ use lightyear::prelude::server::Server;
 use lightyear::shared::events::InputEvent;
 use log::log;
 use crate::defender_game::utils;
-use crate::lightyear_demo::shared::{Inputs, MyProtocol, ReplicatedPosition, Simulated};
+use crate::lightyear_demo::shared::{GlobalTime, Inputs, MyProtocol, ReplicatedPosition, Simulated};
 use super::components::*;
 use super::server::Global;
 
@@ -152,12 +152,6 @@ pub fn handle_pawn_movement(
 
 }
 
-#[derive(Resource, Default)]
-pub struct GlobalTime{
-    pub simulation_time: WrappedTime,
-    pub interpolation_time: WrappedTime,
-    pub server_time: WrappedTime
-}
 //pub fn update_time_client(
 //    client: Res<Client<MyProtocol>>,
 //    tick_manager: Res<TickManager>,
@@ -166,34 +160,20 @@ pub struct GlobalTime{
 //    let current_tick = tick_manager.current_tick();
 //
 //}
-
 pub fn update_time_client(
     client: Res<Client<MyProtocol>>,
-    //mut global_time: ResMut<GlobalTime>,
+    mut global_time: ResMut<GlobalTime>,
 ){
     let tick = client.tick();
-    log::info!("client FixedUpdate,FixedUpdateSet::Main : {:?}", tick.0);
-    //let connection = client.connection;
-    //let sync_manager = connection.sync_manager;
-
+    global_time.simulation_tick = tick;
 }
-pub fn update_time_client_2(
-    client: Res<Client<MyProtocol>>,
-    //mut global_time: ResMut<GlobalTime>,
-){
-    let tick = client.tick();
-    log::info!("client PreUpdate, InterpolationSet::Interpolate: {:?}", tick.0);
-    //let connection = client.connection;
-    //let sync_manager = connection.sync_manager;
 
-}
 pub fn update_time_server(
     server: Res<Server<MyProtocol>>,
+    mut global_time: ResMut<GlobalTime>,
 ){
     let tick = server.tick();
-    log::info!("server FixedUpdate,FixedUpdateSet::Main: {:?}", tick.0);
-    //let connection = client.connection;
-    //let sync_manager = connection.sync_manager;
+    global_time.simulation_tick = tick;
 
 }
 

@@ -66,10 +66,13 @@ impl Plugin for DemoClientPlugin {
             .add_plugins(ClientPlugin::new(plugin_config))
             .add_systems(Startup, init)
 
-            .add_systems(FixedUpdate, handle_simulated_tag_client.in_set(FixedUpdateMainSet::Pull))
-            .add_systems(FixedUpdate, update_time_client.in_set(FixedUpdateMainSet::Pull))
-
-            .add_systems(PreUpdate, update_time_client_2.in_set(InterpolationSet::Interpolate))
+            .add_systems(
+                FixedUpdate,
+                (
+                    handle_simulated_tag_client,
+                    update_time_client,
+                ).in_set(FixedUpdateMainSet::Pull)
+            )
 
 
             .add_systems(FixedUpdate, handle_pawn_input_client
