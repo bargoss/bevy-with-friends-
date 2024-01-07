@@ -1,7 +1,7 @@
 use std::time::Duration;
 use bevy::input::Input;
 use bevy::log::Level;
-use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs, Commands, Transform, Without, Query, TransformBundle, ResMut, KeyCode, Res, With, EventReader};
+use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs, Commands, Transform, Without, Query, TransformBundle, ResMut, KeyCode, Res, With, EventReader, SystemSet};
 use bevy::utils::EntityHashSet;
 use derive_more::{Add, Mul};
 use lightyear::client::events::InputEvent;
@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use crate::lightyear_demo::components::*;
 use crate::lightyear_demo::server::Global;
 use crate::lightyear_demo::systems::*;
+use bevy::prelude::IntoSystemSetConfigs;
 //use crate::lightyear_demo::systems::pawn_movement;
 //use crate::lightyear_demo::systems;
 
@@ -123,6 +124,13 @@ pub fn shared_config() -> SharedConfig {
 
 // create a
 
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone, Copy)]
+pub enum FixedUpdateMainSet {
+    Pull,
+    Update,
+    Push,
+}
+
 pub struct SharedPlugin;
 impl Plugin for SharedPlugin {
     /*
@@ -131,15 +139,26 @@ impl Plugin for SharedPlugin {
     MainFlush,
     */
     fn build(&self, app: &mut App) {
-        //app.add_systems(FixedUpdate, replicated_position_transform_sync.in_set(FixedUpdateSet::Main));
-        app.add_systems(FixedUpdate, (create_replicated_transforms,pull_replicated_positions).chain().in_set(FixedUpdateSet::TickUpdate));
-
-        app.add_systems(FixedUpdate, handle_pawn_movement.in_set(FixedUpdateSet::Main));
-
-        //app.add_systems(FixedUpdate, pawn_movement.in_set(FixedUpdateSet::Main));
-
-        app.add_systems(FixedUpdate, push_replicated_positions.in_set(FixedUpdateSet::MainFlush));
+        app.configure_sets(
+            FixedUpdate,
+            (
+                FixedUpdateMainSet::Pull,
+                FixedUpdateMainSet::Update,
+                FixedUpdateMainSet::Push
+            )
+            .chain()
+            .in_set(FixedUpdateSet::Main)
+        );
+        
+        app.add_systems(FixedUpdate, (create_replicated_transforms,pull_replicated_positions).chain()
+            .in_set(FixedUpdateMainSet::Pull));
+        app.add_systems(FixedUpdate, handle_pawn_movement.in_set(FixedUpdateMainSet::Update));
+        app.add_systems(FixedUpdate, push_replicated_positions.in_set(FixedUpdateMainSet::Push));
     }
+}
+
+pub fn component_sync_finished(){
+
 }
 
 /*

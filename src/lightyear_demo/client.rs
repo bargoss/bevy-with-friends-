@@ -65,12 +65,10 @@ impl Plugin for DemoClientPlugin {
             .add_plugins(ClientPlugin::new(plugin_config))
             .add_systems(Startup, init)
 
-            .add_systems(FixedUpdate, handle_simulated_tag_client.in_set(FixedUpdateSet::TickUpdate))
+            .add_systems(FixedUpdate, handle_simulated_tag_client.in_set(FixedUpdateMainSet::Pull))
 
             .add_systems(FixedUpdate, handle_pawn_input_client
-                .after(increment_tick::<Client<MyProtocol>>)
-                .in_set(FixedUpdateSet::TickUpdate))
-
+                .in_set(FixedUpdateMainSet::Pull))
         ;
 
         if !self.headless{
