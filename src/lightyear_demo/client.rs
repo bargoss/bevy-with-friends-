@@ -16,6 +16,7 @@ pub struct DemoClientPlugin;
 impl Plugin for DemoClientPlugin {
     fn build(&self, app: &mut App) {
         let server_addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), SERVER_PORT);
+        //let server_addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), CLIENT_PORT);
         let auth = Authentication::Manual {
             // server's IP address
             server_addr,
@@ -34,11 +35,9 @@ impl Plugin for DemoClientPlugin {
             incoming_loss: 0.00,
         };
 
-        //let addr = SocketAddrV4::new(Ipv4Addr::LOCALHOST, CLIENT_PORT);
+        let addr = SocketAddrV4::new(Ipv4Addr::LOCALHOST, CLIENT_PORT);
 
-        //let io_config = IoConfig::from_transport(TransportConfig::UdpSocket(SocketAddr::V4(addr)))
-        //    .with_conditioner(link_conditioner);
-        let io_config = IoConfig::from_transport(TransportConfig::LocalChannel)
+        let io_config = IoConfig::from_transport(TransportConfig::UdpSocket(SocketAddr::V4(addr)))
             .with_conditioner(link_conditioner);
 
 

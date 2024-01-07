@@ -24,10 +24,10 @@ impl Plugin for DemoServerPlugin {
             incoming_jitter: Duration::from_millis(0),
             incoming_loss: 0.00,
         };
-        //let io_config = IoConfig::from_transport(TransportConfig::UdpSocket(SocketAddr::V4(addr)))
-        //    .with_conditioner(link_conditioner);
-        let io_config = IoConfig::from_transport(TransportConfig::LocalChannel)
+        let io_config = IoConfig::from_transport(TransportConfig::UdpSocket(SocketAddr::V4(addr)))
             .with_conditioner(link_conditioner);
+        //let io_config = IoConfig::from_transport(TransportConfig::LocalChannel)
+        //    .with_conditioner(link_conditioner);
 
         app
             .add_plugins(
