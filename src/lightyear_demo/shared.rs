@@ -11,6 +11,7 @@ use lightyear::prelude::server::Server;
 use serde::{Deserialize, Serialize};
 use crate::lightyear_demo::components::*;
 use crate::lightyear_demo::server::Global;
+use crate::lightyear_demo::systems::*;
 //use crate::lightyear_demo::systems::pawn_movement;
 //use crate::lightyear_demo::systems;
 
@@ -25,11 +26,11 @@ pub struct Direction {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum Inputs {
     Move(Direction),
-    Direction(Direction),
-    Delete,
-    Spawn,
-    // NOTE: we NEED to provide a None input so that the server can distinguish between lost input packets and 'None' inputs
-    None,
+    //Direction(Direction),
+    //Delete,
+    //Spawn,
+    //// NOTE: we NEED to provide a None input so that the server can distinguish between lost input packets and 'None' inputs
+    //None,
 }
 impl UserInput for Inputs {}
 
@@ -70,6 +71,8 @@ pub enum Components {
     PlayerPosition(PlayerPosition),
     #[sync(once)]
     Pawn(Pawn),
+    #[sync(once)]
+    PawnInput(PawnInput),
     #[sync(once)]
     CircleView(CircleView),
     #[sync(once)]
@@ -131,6 +134,8 @@ impl Plugin for SharedPlugin {
         //app.add_systems(FixedUpdate, replicated_position_transform_sync.in_set(FixedUpdateSet::Main));
         app.add_systems(FixedUpdate, (create_replicated_transforms,pull_replicated_positions).chain().in_set(FixedUpdateSet::TickUpdate));
 
+        app.add_systems(FixedUpdate, handle_pawn_movement.in_set(FixedUpdateSet::Main));
+
         //app.add_systems(FixedUpdate, pawn_movement.in_set(FixedUpdateSet::Main));
 
         app.add_systems(FixedUpdate, push_replicated_positions.in_set(FixedUpdateSet::MainFlush));
@@ -143,36 +148,6 @@ impl Plugin for SharedPlugin {
     MainFlush,
 */
 
-pub fn create_replicated_transforms(
-    mut commands: Commands,
-    // if it doesnt have transform
-    query: Query<(Entity, &ReplicatedPosition), Without<Transform>>,
-){
-    query.for_each(|(entity, replicated_position)|{
-        commands.entity(entity).insert(TransformBundle{
-            local: Transform::from_translation(Vec3::new(replicated_position.0.x, replicated_position.0.y, replicated_position.0.z)),
-            ..Default::default()
-        });
-    });
-}
-pub fn pull_replicated_positions(
-    mut query: Query<(&ReplicatedPosition, &mut Transform)>,
-){
-    query.for_each_mut(|(replicated_position, mut transform)|{
-        transform.translation.x = replicated_position.0.x;
-        transform.translation.y = replicated_position.0.y;
-        transform.translation.z = replicated_position.0.z;
-    });
-}
-pub fn push_replicated_positions(
-    mut query: Query<(&mut ReplicatedPosition, &Transform)>,
-){
-    query.for_each_mut(|(mut replicated_position, transform)|{
-        replicated_position.0.x = transform.translation.x;
-        replicated_position.0.y = transform.translation.y;
-        replicated_position.0.z = transform.translation.z;
-    });
-}
 #[derive(Component)]
 pub struct Simulated;
 pub fn handle_simulated_tag_client(
@@ -224,7 +199,8 @@ pub(crate) fn buffer_input(mut client: ResMut<Client<MyProtocol>>, keypress: Res
         input.right = true;
     }
 
-    client.add_input(Inputs::Direction(input))
+    log::info!("client input: {:?}", input);
+    client.add_input(Inputs::Move(input))
 
     //// always remember to send an input message
     //return client.add_input(Inputs::None);

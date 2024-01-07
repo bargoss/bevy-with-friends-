@@ -5,7 +5,9 @@ use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_vector_shapes::ShapePlugin;
 use lightyear::prelude::client::*;
+use lightyear::shared::systems::tick::increment_tick;
 use crate::lightyear_demo::{CLIENT_PORT, KEY, PROTOCOL_ID, SERVER_PORT};
+use crate::lightyear_demo::systems::*;
 use super::shared::*;
 
 
@@ -64,6 +66,11 @@ impl Plugin for DemoClientPlugin {
             .add_systems(Startup, init)
 
             .add_systems(FixedUpdate, handle_simulated_tag_client.in_set(FixedUpdateSet::TickUpdate))
+
+            .add_systems(FixedUpdate, handle_pawn_input_client
+                .after(increment_tick::<Client<MyProtocol>>)
+                .in_set(FixedUpdateSet::TickUpdate))
+
         ;
 
         if !self.headless{

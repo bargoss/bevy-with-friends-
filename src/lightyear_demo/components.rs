@@ -32,6 +32,7 @@ impl Default for CircleView{
 #[derive(Bundle)]
 pub struct PawnBundle{
     pawn: Pawn,
+    pawn_input: PawnInput,
     player_id: PlayerId,
     replicated_position : ReplicatedPosition,
     replicate: Replicate,
@@ -47,6 +48,7 @@ impl PawnBundle{
     ) -> Self{
         Self{
             pawn: Pawn::default(),
+            pawn_input: PawnInput::default(),
             player_id: PlayerId::new(owner_client_id),
             replicated_position : ReplicatedPosition(position),
             replicate: Replicate{
