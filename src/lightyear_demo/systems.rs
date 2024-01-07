@@ -11,7 +11,7 @@ use lightyear::prelude::server::Server;
 use lightyear::shared::events::InputEvent;
 use log::log;
 use crate::defender_game::utils;
-use crate::lightyear_demo::shared::{GlobalTime, Inputs, MyProtocol, ReplicatedPosition, Simulated};
+use crate::lightyear_demo::shared::{GlobalTime, Inputs, MyProtocol, PlayerId, ReplicatedPosition, Simulated};
 use super::components::*;
 use super::server::Global;
 
@@ -177,32 +177,55 @@ pub fn update_time_server(
 
 }
 
+pub fn handle_projectile(
+    mut projectile_query: Query<(&mut Projectile, &SimpleVelocity, &mut Transform),With<Simulated>>,
+    mut commands: Commands
+){
+    projectile_query.for_each_mut(|(mut projectile, velocity, mut transform)|{
+        transform.translation += velocity.value * 0.05;
+
+        //projectile.life_time -= 1;
+        //if projectile.life_time <= 0 {
+        //    commands.entity(projectile.entity).despawn();
+        //}
+    });
+}
+
+
 // mut client: ResMut<Client<MyProtocol>>,
 pub fn handle_pawn_shooting(
-    mut pawn_query: Query<(&mut Pawn, &PawnInput, &Transform), With<Simulated>>,
+    mut pawn_query: Query<(&mut Pawn, &PawnInput, &Transform, &PlayerId), With<Simulated>>,
+    global_time: Res<GlobalTime>,
     //time_manager: TimeManager???,
     //tick_manager: Res<TickManager>,
-    mut _commands: Commands,
+    mut commands: Commands,
 ){
-    let cooldown_time_ms = 500;
+    let cooldown_time_in_ticks = 10;
 
     //let current_tick = tick_manager.current_tick();
     //let current_time = time_manager.current_time();
     let current_tick = Tick::new(0);
 
 
-    pawn_query.for_each_mut(|(mut pawn, pawn_input, mut transform)|{
-        //log::info!("PAWN?");
-        if pawn_input.attack{
-            log::info!("TRYING TO SHOOT");
-        }
-        //if pawn_input.attack && (current_time - pawn.last_attack_time).num_milliseconds() > cooldown_time_ms {
-        //    pawn.last_attack_time = current_time;
-//
-        //    log::info!("SHOOTING");
-//
-        //    //commands.spawn(bullet);
-        //}
-    });
+    pawn_query.for_each_mut(|(mut pawn, pawn_input, mut transform, player_id)|{
+        //pawn.last_attack_time
+        if pawn_input.attack && global_time.simulation_tick.0 - pawn.last_attack_time.0 > cooldown_time_in_ticks {
+            pawn.last_attack_time = global_time.simulation_tick;
+            log::info!("SHOOTING");
+            /*
+                    owner_client_id: ClientId,
+                    start_tick : Tick,
+                    position: Vec3,
+                    velocity: Vec3,
+            */
+            let shoot_dir = pawn_input.movement_direction;
 
+            commands.spawn(ProjectileBundle::new(
+                *player_id.clone(),
+                global_time.simulation_tick,
+                Vec3::new(transform.translation.x, transform.translation.y, transform.translation.z),
+                shoot_dir,
+            )).insert(Simulated);
+        }
+    });
 }

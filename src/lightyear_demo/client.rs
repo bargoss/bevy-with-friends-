@@ -32,7 +32,7 @@ impl Plugin for DemoClientPlugin {
         //let client_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), self.client_port);
         let client_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), CLIENT_PORT);
         let link_conditioner = LinkConditionerConfig {
-            incoming_latency: Duration::from_millis(200),
+            incoming_latency: Duration::from_millis(1000), //incoming_latency: Duration::from_millis(200),
             incoming_jitter: Duration::from_millis(20),
             incoming_loss: 0.05,
         };

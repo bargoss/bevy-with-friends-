@@ -1,14 +1,35 @@
 use bevy::prelude::*;
 use derive_more::{Add, Mul};
-use lightyear::_reexport::WrappedTime;
+use lightyear::_reexport::{InterpolatedComponent, LinearInterpolation, NoInterpolation, WrappedTime};
+use lightyear::client::interpolation::InterpFn;
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 use crate::lightyear_demo::shared::*;
 
 //#[derive(Component, Default, Clone)]
-#[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Deref, DerefMut, Add, Mul)]
+#[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Deref, DerefMut)]
 pub struct Pawn{
-    pub last_attack_time : WrappedTime,
+    pub last_attack_time : Tick,
+}
+
+// Assuming `InterpFn` needs to be implemented for Pawn
+impl InterpFn<Pawn> for LinearInterpolation {
+    fn lerp(start: Pawn, other: Pawn, t: f32) -> Pawn {
+        other
+    }
+}
+
+//impl InterpolatedComponent<Pawn> for Pawn{
+//    type Fn = LinearInterpolation;
+//    fn lerp(start: Pawn, other: Pawn, t: f32) -> Pawn {
+//        other
+//    }
+//}
+
+#[derive(Component)]
+struct Position {
+    x: f32,
+    y: f32,
 }
 #[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct PawnInput{
@@ -66,6 +87,60 @@ impl PawnBundle{
                 radius,
                 color
             }
+        }
+    }
+}
+
+#[derive(Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq)]
+pub struct Projectile{
+    pub start_tick : Tick,
+}
+
+#[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Deref, DerefMut, Add, Mul)]
+pub struct SimpleVelocity{
+    pub value : Vec3,
+}
+
+#[derive(Bundle)]
+pub struct ProjectileBundle{
+    owner_id: PlayerId,
+    projectile: Projectile,
+    simple_velocity: SimpleVelocity,
+    replicated_position : ReplicatedPosition,
+    transform_bundle: TransformBundle,
+    circle_view: CircleView,
+    replicate: Replicate,
+}
+
+impl ProjectileBundle{
+    pub fn new(
+        owner_client_id: ClientId,
+        start_tick : Tick,
+        position: Vec3,
+        velocity: Vec3,
+    ) -> Self{
+        Self{
+            owner_id: PlayerId::new(owner_client_id),
+            projectile: Projectile{
+                start_tick
+            },
+            simple_velocity: SimpleVelocity{
+                value: velocity,
+            },
+            replicated_position : ReplicatedPosition(position),
+            transform_bundle: TransformBundle{
+                local: Transform::from_translation(position),
+                ..Default::default()
+            },
+            circle_view: CircleView{
+                radius: 0.25,
+                color: Color::RED,
+            },
+            replicate: Replicate{
+                prediction_target: NetworkTarget::Only(vec![owner_client_id]),
+                interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
+                ..Default::default()
+            },
         }
     }
 }

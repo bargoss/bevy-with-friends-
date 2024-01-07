@@ -72,7 +72,7 @@ pub enum Components {
     PlayerId(PlayerId),
     #[sync(full)]
     PlayerPosition(PlayerPosition),
-    #[sync(once)]
+    #[sync(full)]
     Pawn(Pawn),
     #[sync(once)]
     PawnInput(PawnInput),
@@ -82,6 +82,10 @@ pub enum Components {
     PlayerColor(PlayerColor),
     #[sync(full)]
     ReplicatedPosition(ReplicatedPosition),
+    #[sync(once)]
+    Projectile(Projectile),
+    #[sync(full)]
+    SimpleVelocity(SimpleVelocity),
 }
 
 
@@ -112,7 +116,6 @@ pub fn shared_config() -> SharedConfig {
         enable_replication: true,
         client_send_interval: Duration::default(),
         server_send_interval: Duration::from_millis(40),
-        // server_send_interval: Duration::from_millis(100),
         tick: TickConfig {
             tick_duration: Duration::from_secs_f64(1.0 / 64.0),
         },
@@ -159,15 +162,14 @@ impl Plugin for SharedPlugin {
 
         app.add_systems(FixedUpdate, handle_pawn_movement.in_set(FixedUpdateMainSet::Update));
         app.add_systems(FixedUpdate, handle_pawn_shooting.in_set(FixedUpdateMainSet::Update));
+        app.add_systems(FixedUpdate, handle_projectile.in_set(FixedUpdateMainSet::Update));
+
 
 
         app.add_systems(FixedUpdate, push_replicated_positions.in_set(FixedUpdateMainSet::Push));
     }
 }
 
-pub fn component_sync_finished(){
-
-}
 
 /*
     TickUpdate,    /// Main loop (with physics, game logic) during FixedUpda
