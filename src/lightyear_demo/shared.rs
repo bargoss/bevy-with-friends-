@@ -1,3 +1,5 @@
+use std::time::Duration;
+use bevy::log::Level;
 use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3};
 use bevy::utils::EntityHashSet;
 use derive_more::{Add, Mul};
@@ -83,4 +85,23 @@ pub(crate) fn protocol() -> MyProtocol {
         direction: ChannelDirection::Bidirectional,
     });
     protocol
+}
+
+
+
+pub fn shared_config() -> SharedConfig {
+    SharedConfig {
+        enable_replication: true,
+        client_send_interval: Duration::default(),
+        server_send_interval: Duration::from_millis(40),
+        // server_send_interval: Duration::from_millis(100),
+        tick: TickConfig {
+            tick_duration: Duration::from_secs_f64(1.0 / 64.0),
+        },
+        log: LogConfig {
+            level: Level::INFO,
+            filter: "wgpu=error,wgpu_hal=error,naga=warn,bevy_app=info,bevy_render=warn,quinn=warn"
+                .to_string(),
+        },
+    }
 }

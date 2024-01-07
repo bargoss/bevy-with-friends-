@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use lightyear::client::resource::Client;
 use lightyear::prelude::server::*;
 use crate::lightyear_demo::components::PawnBundle;
-use crate::lightyear_demo::SERVER_PORT;
+use crate::lightyear_demo::{KEY, PROTOCOL_ID, SERVER_PORT};
 use super::shared::*;
 
 
@@ -17,26 +17,36 @@ pub struct DemoServerPlugin;
 
 impl Plugin for DemoServerPlugin {
     fn build(&self, app: &mut App) {
-        let addr = SocketAddrV4::new(Ipv4Addr::LOCALHOST, SERVER_PORT);
-        // You can add a link conditioner to simulate network conditions
+        //let server_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), self.port);
+        let server_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), SERVER_PORT);
+        let netcode_config = NetcodeConfig::default()
+            .with_protocol_id(PROTOCOL_ID)
+            .with_key(KEY);
         let link_conditioner = LinkConditionerConfig {
-            incoming_latency: Duration::from_millis(100),
-            incoming_jitter: Duration::from_millis(0),
-            incoming_loss: 0.00,
+            incoming_latency: Duration::from_millis(200),
+            incoming_jitter: Duration::from_millis(20),
+            incoming_loss: 0.05,
         };
-        let io_config = IoConfig::from_transport(TransportConfig::UdpSocket(SocketAddr::V4(addr)))
-            .with_conditioner(link_conditioner);
-        //let io_config = IoConfig::from_transport(TransportConfig::LocalChannel)
-        //    .with_conditioner(link_conditioner);
+        //let transport = match self.transport {
+        //    Transports::Udp => TransportConfig::UdpSocket(server_addr),
+        //    Transports::Webtransport => TransportConfig::WebTransportServer {
+        //        server_addr,
+        //        certificate: Certificate::self_signed(&["localhost"]),
+        //    },
+        //};
+        let transport = TransportConfig::UdpSocket(server_addr);
+        let io =
+            Io::from_config(&IoConfig::from_transport(transport).with_conditioner(link_conditioner));
+        let config = ServerConfig {
+            shared: shared_config().clone(),
+            netcode: netcode_config,
+            ping: PingConfig::default(),
+        };
+        let plugin_config = PluginConfig::new(config, io, protocol());
 
         app
             .add_plugins(
-                ServerPlugin::new(PluginConfig::new(
-                    ServerConfig::default(),
-                    Io::from_config(&io_config),
-                    protocol()
-                )
-            ))
+                ServerPlugin::new(plugin_config))
             .init_resource::<Global>()
             .add_systems(Update, handle_connections)
             .add_systems(Startup, init)

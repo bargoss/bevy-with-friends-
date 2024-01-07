@@ -79,12 +79,12 @@ fn run_server(headless : bool) {
 fn main() {
     // create a new thread
     let server_thread = std::thread::spawn(move || -> anyhow::Result<()> {
-        //run_server();
-        run_client(true);
+        run_server(true);
+        //run_client(true);
         Ok(())
     });
 
 
-    run_server(true);
-    //run_client();
+    //run_server(true);
+    run_client(false);
 }
