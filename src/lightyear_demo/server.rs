@@ -9,7 +9,7 @@ use lightyear::prelude::server::*;
 use lightyear::shared::systems::tick::increment_tick;
 use crate::lightyear_demo::components::PawnBundle;
 use crate::lightyear_demo::{KEY, PROTOCOL_ID, SERVER_PORT};
-use crate::lightyear_demo::systems::{handle_pawn_input_client, handle_pawn_input_server};
+use crate::lightyear_demo::systems::{handle_pawn_input_client, handle_pawn_input_server, update_time_server};
 use super::shared::*;
 
 
@@ -53,6 +53,9 @@ impl Plugin for DemoServerPlugin {
 
             .add_systems(FixedUpdate, handle_simulated_tag_server.in_set(FixedUpdateMainSet::Pull))
             .add_systems(FixedUpdate, handle_pawn_input_server.in_set(FixedUpdateMainSet::Pull))
+
+            .add_systems(FixedUpdate, update_time_server.in_set(FixedUpdateMainSet::Pull))
+
 
             .add_systems(Update, handle_connections)
             .add_systems(Startup, init);

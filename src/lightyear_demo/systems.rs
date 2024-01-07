@@ -172,10 +172,28 @@ pub fn update_time_client(
     //mut global_time: ResMut<GlobalTime>,
 ){
     let tick = client.tick();
-    log::info!("tick: {:?}", tick.0);
+    log::info!("client FixedUpdate,FixedUpdateSet::Main : {:?}", tick.0);
     //let connection = client.connection;
     //let sync_manager = connection.sync_manager;
 
+}
+pub fn update_time_client_2(
+    client: Res<Client<MyProtocol>>,
+    //mut global_time: ResMut<GlobalTime>,
+){
+    let tick = client.tick();
+    log::info!("client PreUpdate, InterpolationSet::Interpolate: {:?}", tick.0);
+    //let connection = client.connection;
+    //let sync_manager = connection.sync_manager;
+
+}
+pub fn update_time_server(
+    server: Res<Server<MyProtocol>>,
+){
+    let tick = server.tick();
+    log::info!("server FixedUpdate,FixedUpdateSet::Main: {:?}", tick.0);
+    //let connection = client.connection;
+    //let sync_manager = connection.sync_manager;
 
 }
 
