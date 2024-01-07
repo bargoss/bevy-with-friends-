@@ -66,6 +66,8 @@ impl Plugin for DemoClientPlugin {
             .add_systems(Startup, init)
 
             .add_systems(FixedUpdate, handle_simulated_tag_client.in_set(FixedUpdateMainSet::Pull))
+            .add_systems(FixedUpdate, update_time_client.in_set(FixedUpdateMainSet::Pull))
+
 
             .add_systems(FixedUpdate, handle_pawn_input_client
                 .in_set(FixedUpdateMainSet::Pull))

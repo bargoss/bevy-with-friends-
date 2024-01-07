@@ -13,20 +13,22 @@ use crate::lightyear_demo::components::*;
 use crate::lightyear_demo::server::Global;
 use crate::lightyear_demo::systems::*;
 use bevy::prelude::IntoSystemSetConfigs;
+use lightyear::_reexport::WrappedTime;
 //use crate::lightyear_demo::systems::pawn_movement;
 //use crate::lightyear_demo::systems;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-pub struct Direction {
+pub struct PawnInputData {
     pub(crate) up: bool,
     pub(crate) down: bool,
     pub(crate) left: bool,
     pub(crate) right: bool,
+    pub(crate) attack: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum Inputs {
-    Move(Direction),
+    Move(PawnInputData),
     //Direction(Direction),
     //Delete,
     //Spawn,
@@ -149,10 +151,14 @@ impl Plugin for SharedPlugin {
             .chain()
             .in_set(FixedUpdateSet::Main)
         );
-        
+
         app.add_systems(FixedUpdate, (create_replicated_transforms,pull_replicated_positions).chain()
             .in_set(FixedUpdateMainSet::Pull));
+
         app.add_systems(FixedUpdate, handle_pawn_movement.in_set(FixedUpdateMainSet::Update));
+        app.add_systems(FixedUpdate, handle_pawn_shooting.in_set(FixedUpdateMainSet::Update));
+
+
         app.add_systems(FixedUpdate, push_replicated_positions.in_set(FixedUpdateMainSet::Push));
     }
 }
@@ -199,11 +205,12 @@ pub fn handle_simulated_tag_server(
 
 
 pub(crate) fn buffer_input(mut client: ResMut<Client<MyProtocol>>, keypress: Res<Input<KeyCode>>) {
-    let mut input = Direction {
+    let mut input = PawnInputData {
         up: false,
         down: false,
         left: false,
         right: false,
+        attack: false,
     };
     if keypress.pressed(KeyCode::W) || keypress.pressed(KeyCode::Up) {
         input.up = true;
@@ -217,8 +224,10 @@ pub(crate) fn buffer_input(mut client: ResMut<Client<MyProtocol>>, keypress: Res
     if keypress.pressed(KeyCode::D) || keypress.pressed(KeyCode::Right) {
         input.right = true;
     }
+    if keypress.pressed(KeyCode::Space) {
+        input.attack = true;
+    }
 
-    log::info!("client input: {:?}", input);
     client.add_input(Inputs::Move(input))
 
     //// always remember to send an input message

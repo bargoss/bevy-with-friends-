@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use derive_more::{Add, Mul};
+use lightyear::_reexport::WrappedTime;
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
 use crate::lightyear_demo::shared::*;
@@ -7,11 +8,12 @@ use crate::lightyear_demo::shared::*;
 //#[derive(Component, Default, Clone)]
 #[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Deref, DerefMut, Add, Mul)]
 pub struct Pawn{
-    pub last_attack_time : f32,
+    pub last_attack_time : WrappedTime,
 }
 #[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct PawnInput{
     pub movement_direction : Vec3,
+    pub attack : bool,
 }
 
 #[derive(Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq)]

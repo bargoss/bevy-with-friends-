@@ -1,7 +1,11 @@
+use bevy::ecs::component::Tick;
 use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy_vector_shapes::painter::ShapePainter;
-use lightyear::prelude::client::Predicted;
+use lightyear::_reexport::{TickManager, TimeManager, WrappedTime};
+use lightyear::client::connection::Connection;
+use lightyear::client::sync::SyncManager;
+use lightyear::prelude::client::{Client, Predicted};
 use lightyear::prelude::{ClientId, Replicate};
 use lightyear::prelude::server::Server;
 use lightyear::shared::events::InputEvent;
@@ -44,7 +48,7 @@ pub(crate) fn movement(
 }
 app.add_systems(FixedUpdate, movement.in_set(FixedUpdateSet::Main));
 */
-pub fn direction_input_to_vec3(dir: &super::shared::Direction) -> Vec3{
+pub fn direction_input_to_vec3(dir: &super::shared::PawnInputData) -> Vec3{
     let mut movement_direction = Vec3::ZERO;
     if dir.up {
         movement_direction.y += 1.0;
@@ -69,8 +73,9 @@ pub fn handle_pawn_input_client(
     for input in input_reader.read() {
         if let Some(input) = input.input() {
             for mut data in pawn_query.iter_mut() {
-                match input { Inputs::Move(direction) => {
-                    data.1.movement_direction = direction_input_to_vec3(direction);
+                match input { Inputs::Move(input_data) => {
+                    data.1.movement_direction = direction_input_to_vec3(input_data);
+                    data.1.attack = input_data.attack;
                 }}
             }
         }
@@ -88,19 +93,14 @@ pub fn handle_pawn_input_server(
     //});
 
     for input in input_reader.read() {
-        log::info!("a");
         let client_id = input.context();
         if let Some(input) = input.input() {
-            log::info!("b");
             if let Some(player_entity) = global.client_id_to_entity_id.get(client_id) {
-                log::info!("c");
                 if let Ok(mut data) = pawn_query.get_mut(*player_entity) {
-                    log::info!("d");
-                    if let Inputs::Move(dir) = input {
-                        log::info!("e");
-                        let input = direction_input_to_vec3(dir);
-                        log::info!("client input on server: {:?}", input);
-                        data.1.movement_direction = input;
+                    if let Inputs::Move(input_data) = input {
+                        let movement_direction = direction_input_to_vec3(input_data);
+                        data.1.movement_direction = movement_direction;
+                        data.1.attack = input_data.attack;
                     }
                 }
             }
@@ -148,6 +148,63 @@ pub fn handle_pawn_movement(
         let movement_direction = pawn_input.movement_direction;
         transform.translation.x += movement_direction.x * speed;
         transform.translation.y += movement_direction.y * speed;
+    });
+
+}
+
+#[derive(Resource, Default)]
+pub struct GlobalTime{
+    pub simulation_time: WrappedTime,
+    pub interpolation_time: WrappedTime,
+    pub server_time: WrappedTime
+}
+//pub fn update_time_client(
+//    client: Res<Client<MyProtocol>>,
+//    tick_manager: Res<TickManager>,
+//    mut global_time: ResMut<GlobalTime>,
+//){
+//    let current_tick = tick_manager.current_tick();
+//
+//}
+
+pub fn update_time_client(
+    client: Res<Client<MyProtocol>>,
+    //mut global_time: ResMut<GlobalTime>,
+){
+    let tick = client.tick();
+    log::info!("tick: {:?}", tick.0);
+    //let connection = client.connection;
+    //let sync_manager = connection.sync_manager;
+
+
+}
+
+// mut client: ResMut<Client<MyProtocol>>,
+pub fn handle_pawn_shooting(
+    mut pawn_query: Query<(&mut Pawn, &PawnInput, &Transform), With<Simulated>>,
+    //time_manager: TimeManager???,
+    //tick_manager: Res<TickManager>,
+    mut _commands: Commands,
+){
+    let cooldown_time_ms = 500;
+
+    //let current_tick = tick_manager.current_tick();
+    //let current_time = time_manager.current_time();
+    let current_tick = Tick::new(0);
+
+
+    pawn_query.for_each_mut(|(mut pawn, pawn_input, mut transform)|{
+        //log::info!("PAWN?");
+        if pawn_input.attack{
+            log::info!("TRYING TO SHOOT");
+        }
+        //if pawn_input.attack && (current_time - pawn.last_attack_time).num_milliseconds() > cooldown_time_ms {
+        //    pawn.last_attack_time = current_time;
+//
+        //    log::info!("SHOOTING");
+//
+        //    //commands.spawn(bullet);
+        //}
     });
 
 }
