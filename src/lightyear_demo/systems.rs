@@ -12,6 +12,7 @@ use lightyear::shared::events::InputEvent;
 use log::log;
 use crate::defender_game::utils;
 use crate::lightyear_demo::shared::{GlobalTime, Inputs, MyProtocol, PlayerId, ReplicatedPosition, Simulated};
+use crate::lightyear_demo::shared::Components::ShouldBePredicted;
 use super::components::*;
 use super::server::Global;
 
@@ -194,7 +195,7 @@ pub fn handle_projectile(
 
 // mut client: ResMut<Client<MyProtocol>>,
 pub fn handle_pawn_shooting(
-    mut pawn_query: Query<(&mut Pawn, &PawnInput, &Transform, &PlayerId), With<Simulated>>,
+    mut pawn_query: Query<(Entity,&mut Pawn, &PawnInput, &Transform, &PlayerId), With<Simulated>>,
     global_time: Res<GlobalTime>,
     //time_manager: TimeManager???,
     //tick_manager: Res<TickManager>,
@@ -207,7 +208,7 @@ pub fn handle_pawn_shooting(
     let current_tick = Tick::new(0);
 
 
-    pawn_query.for_each_mut(|(mut pawn, pawn_input, mut transform, player_id)|{
+    pawn_query.for_each_mut(|(entity, mut pawn, pawn_input, mut transform, player_id)|{
         //pawn.last_attack_time
         if pawn_input.attack && global_time.simulation_tick.0 - pawn.last_attack_time.0 > cooldown_time_in_ticks {
             pawn.last_attack_time = global_time.simulation_tick;
@@ -220,12 +221,22 @@ pub fn handle_pawn_shooting(
             */
             let shoot_dir = pawn_input.movement_direction;
 
-            commands.spawn(ProjectileBundle::new(
+
+            let mut projectile = commands.spawn(ProjectileBundle::new(
                 *player_id.clone(),
                 global_time.simulation_tick,
                 Vec3::new(transform.translation.x, transform.translation.y, transform.translation.z),
                 shoot_dir,
-            )).insert(Simulated);
+            ));
+            let entity_id = projectile.id();
+
+
+            whats even client id
+            projectile.insert(lightyear::_reexport::ShouldBePredicted{
+                client_entity :  Some(entity_id),
+            });
+
+
         }
     });
 }
