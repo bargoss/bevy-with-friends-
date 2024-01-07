@@ -45,8 +45,8 @@ impl Plugin for DemoServerPlugin {
         let plugin_config = PluginConfig::new(config, io, protocol());
 
         app
-            .add_plugins(
-                ServerPlugin::new(plugin_config))
+            .add_plugins(ServerPlugin::new(plugin_config))
+            .add_plugins(SharedPlugin)
             .init_resource::<Global>()
             .add_systems(Update, handle_connections)
             .add_systems(Startup, init)
@@ -75,7 +75,7 @@ fn handle_connections(
         let l = 0.5;
 
         let entity = commands.spawn(PawnBundle::new(
-            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(6.0, 0.0, 0.0),
             0.5,
             Color::hsl(h, s, l),
             *client_id,

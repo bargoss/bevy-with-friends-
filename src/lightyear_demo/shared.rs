@@ -1,10 +1,12 @@
 use std::time::Duration;
 use bevy::log::Level;
-use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3};
+use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs};
 use bevy::utils::EntityHashSet;
 use derive_more::{Add, Mul};
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
+use crate::lightyear_demo::components::*;
+use crate::lightyear_demo::systems::{create_replicated_transforms, pull_replicated_positions, push_replicated_positions};
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Direction {
@@ -61,6 +63,10 @@ pub enum Components {
     #[sync(full)]
     PlayerPosition(PlayerPosition),
     #[sync(once)]
+    Pawn(Pawn),
+    #[sync(once)]
+    CircleView(CircleView),
+    #[sync(once)]
     PlayerColor(PlayerColor),
     #[sync(full)]
     ReplicatedPosition(ReplicatedPosition),
@@ -103,5 +109,21 @@ pub fn shared_config() -> SharedConfig {
             filter: "wgpu=error,wgpu_hal=error,naga=warn,bevy_app=info,bevy_render=warn,quinn=warn"
                 .to_string(),
         },
+    }
+}
+
+// create a
+
+pub struct SharedPlugin;
+impl Plugin for SharedPlugin {
+    /*
+    TickUpdate,    /// Main loop (with physics, game logic) during FixedUpda
+    Main,
+    MainFlush,
+    */
+    fn build(&self, app: &mut App) {
+        //app.add_systems(FixedUpdate, replicated_position_transform_sync.in_set(FixedUpdateSet::Main));
+        app.add_systems(FixedUpdate, (create_replicated_transforms,pull_replicated_positions).chain().in_set(FixedUpdateSet::TickUpdate));
+        app.add_systems(FixedUpdate, push_replicated_positions.in_set(FixedUpdateSet::MainFlush));
     }
 }

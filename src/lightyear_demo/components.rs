@@ -1,13 +1,16 @@
 use bevy::prelude::*;
+use derive_more::{Add, Mul};
 use lightyear::prelude::*;
+use serde::{Deserialize, Serialize};
 use crate::lightyear_demo::shared::*;
 
-#[derive(Component, Default, Clone)]
+//#[derive(Component, Default, Clone)]
+#[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Deref, DerefMut, Add, Mul)]
 pub struct Pawn{
     pub last_attack_time : f32,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct CircleView{
     pub radius : f32,
     pub color : Color,

@@ -57,9 +57,8 @@ impl Plugin for DemoClientPlugin {
 
 
         app
-            .add_plugins(
-                ClientPlugin::new(plugin_config)
-            )
+            .add_plugins(SharedPlugin)
+            .add_plugins(ClientPlugin::new(plugin_config))
             .add_systems(Startup, init)
         ;
     }
@@ -69,7 +68,12 @@ fn init(
     mut commands: Commands,
     mut client: ResMut<Client<MyProtocol>>,
 ) {
-    commands.spawn(Camera3dBundle::default());
+    //commands.spawn(Camera3dBundle::default());
+    commands.spawn(Camera3dBundle {
+        transform: Transform::from_translation(Vec3::new(0.0, 0.0, 20.0))
+            .looking_at(Vec3::ZERO, Vec3::Y),
+        ..default()
+    });
     commands.spawn(TextBundle::from_section(
         "Client",
         TextStyle {
