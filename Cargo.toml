@@ -25,3 +25,4 @@ rand = { version = "0.8.5", features = [] }
 serde = "1.0.193"
 derive_more = "0.99.17"
 anyhow = "1.0.78"
+log = "0.4.19"

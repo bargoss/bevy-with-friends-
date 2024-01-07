@@ -2,7 +2,9 @@ use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 use std::time::Duration;
 use lightyear::prelude::*;
 use bevy::prelude::*;
-use lightyear::prelude::client::{Authentication, ClientConfig, ClientPlugin, PluginConfig};
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_vector_shapes::ShapePlugin;
+use lightyear::prelude::client::*;
 use crate::lightyear_demo::{CLIENT_PORT, KEY, PROTOCOL_ID, SERVER_PORT};
 use super::shared::*;
 
@@ -32,9 +34,11 @@ impl Plugin for DemoClientPlugin {
             incoming_loss: 0.00,
         };
 
-        let addr = SocketAddrV4::new(Ipv4Addr::LOCALHOST, CLIENT_PORT);
+        //let addr = SocketAddrV4::new(Ipv4Addr::LOCALHOST, CLIENT_PORT);
 
-        let io_config = IoConfig::from_transport(TransportConfig::UdpSocket(SocketAddr::V4(addr)))
+        //let io_config = IoConfig::from_transport(TransportConfig::UdpSocket(SocketAddr::V4(addr)))
+        //    .with_conditioner(link_conditioner);
+        let io_config = IoConfig::from_transport(TransportConfig::LocalChannel)
             .with_conditioner(link_conditioner);
 
 
@@ -46,6 +50,24 @@ impl Plugin for DemoClientPlugin {
                     protocol(),
                     auth
                 ))
-            );
+            )
+            .add_systems(Startup, init)
+        ;
     }
+}
+
+fn init(
+    mut commands: Commands,
+    mut client: ResMut<Client<MyProtocol>>,
+) {
+    commands.spawn(Camera3dBundle::default());
+    commands.spawn(TextBundle::from_section(
+        "Client",
+        TextStyle {
+            font_size: 30.0,
+            color: Color::WHITE,
+            ..default()
+        },
+    ));
+    client.connect();
 }

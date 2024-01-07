@@ -1,4 +1,4 @@
-use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2};
+use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3};
 use bevy::utils::EntityHashSet;
 use derive_more::{Add, Mul};
 use lightyear::prelude::*;
@@ -14,6 +14,7 @@ pub struct Direction {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub enum Inputs {
+    Move(Direction),
     Direction(Direction),
     Delete,
     Spawn,
@@ -36,8 +37,17 @@ pub enum Messages {
 #[derive(Component, Message, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Add, Mul)]
 pub struct PlayerId(ClientId);
 
+impl PlayerId {
+    pub fn new(client_id: ClientId) -> Self {
+        Self(client_id)
+    }
+}
+
 #[derive(Component, Message, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Add, Mul)]
 pub struct PlayerPosition(Vec2);
+
+#[derive(Component, Message, Serialize, Deserialize, Clone, Debug, PartialEq, Deref, DerefMut, Add, Mul)]
+pub struct ReplicatedPosition(pub Vec3);
 
 #[derive(Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Deref, DerefMut, Add, Mul)]
 pub struct PlayerColor(pub(crate) Color);
@@ -50,6 +60,8 @@ pub enum Components {
     PlayerPosition(PlayerPosition),
     #[sync(once)]
     PlayerColor(PlayerColor),
+    #[sync(full)]
+    ReplicatedPosition(ReplicatedPosition),
 }
 
 
