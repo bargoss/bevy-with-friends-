@@ -9,6 +9,10 @@ use crate::lightyear_demo::shared::*;
 pub struct Pawn{
     pub last_attack_time : f32,
 }
+#[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq)]
+pub struct PawnInput{
+    pub movement_direction : Vec3,
+}
 
 #[derive(Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct CircleView{

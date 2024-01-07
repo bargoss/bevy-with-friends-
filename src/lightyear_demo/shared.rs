@@ -1,13 +1,16 @@
 use std::time::Duration;
 use bevy::input::Input;
 use bevy::log::Level;
-use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs, Commands, Transform, Without, Query, TransformBundle, ResMut, KeyCode, Res, With};
+use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs, Commands, Transform, Without, Query, TransformBundle, ResMut, KeyCode, Res, With, EventReader};
 use bevy::utils::EntityHashSet;
 use derive_more::{Add, Mul};
+use lightyear::client::events::InputEvent;
 use lightyear::prelude::*;
 use lightyear::prelude::client::{Client, InputSystemSet, Predicted};
+use lightyear::prelude::server::Server;
 use serde::{Deserialize, Serialize};
 use crate::lightyear_demo::components::*;
+use crate::lightyear_demo::server::Global;
 //use crate::lightyear_demo::systems::pawn_movement;
 //use crate::lightyear_demo::systems;
 
@@ -232,7 +235,36 @@ pub(crate) fn buffer_input(mut client: ResMut<Client<MyProtocol>>, keypress: Res
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct InputComponent<T>(pub T);
 
-type MyInputComponent = InputComponent<Direction>;
+//type MyInputComponent = InputComponent<Direction>;
+
+/*
+pub(crate) fn movement(
+    mut position_query: Query<&mut PlayerPosition>,
+    mut input_reader: EventReader<InputEvent<Inputs>>,
+    global: Res<Global>,
+    server: Res<Server<MyProtocol>>,
+) {
+    for input in input_reader.read() {
+        let client_id = input.context();
+        if let Some(input) = input.input() {
+            if let Some(player_entity) = global.client_id_to_entity_id.get(client_id) {
+                if let Ok(position) = position_query.get_mut(*player_entity) {
+                    shared_movement_behaviour(position, input);
+                }
+            }
+        }
+    }
+}
+*/
+//app.add_systems(FixedUpdate, movement.in_set(FixedUpdateSet::Main));
+pub fn set_pawn_inputs_server(
+    mut pawn_query: Query<&mut PlayerPosition>,
+    mut input_reader: EventReader<InputEvent<Inputs>>,
+    global: Res<Global>,
+    server: Res<Server<MyProtocol>>,
+){
+
+}
 
 
 //pub fn sync_input_component_server<T>(

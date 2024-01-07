@@ -11,7 +11,9 @@ use super::shared::*;
 
 // define a bevy plugin
 
-pub struct DemoClientPlugin;
+pub struct DemoClientPlugin{
+    pub headless: bool
+}
 
 impl Plugin for DemoClientPlugin {
     fn build(&self, app: &mut App) {
@@ -62,8 +64,11 @@ impl Plugin for DemoClientPlugin {
             .add_systems(Startup, init)
 
             .add_systems(FixedUpdate, handle_simulated_tag_client.in_set(FixedUpdateSet::TickUpdate))
-            .add_systems(FixedUpdate, buffer_input.in_set(InputSystemSet::BufferInputs))
         ;
+
+        if !self.headless{
+            app.add_systems(FixedUpdate, buffer_input.in_set(InputSystemSet::BufferInputs));
+        }
     }
 }
 

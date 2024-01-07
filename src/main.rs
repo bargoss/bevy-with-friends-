@@ -25,7 +25,7 @@ fn init_test_stuff(){
 }
 fn run_client(headless : bool) {
     let mut app_builder = App::new();
-    app_builder.add_plugins(DemoClientPlugin);
+    app_builder.add_plugins(DemoClientPlugin { headless });
 
     if headless {
         app_builder
@@ -83,7 +83,6 @@ fn main() {
         //run_client(true);
         Ok(())
     });
-
 
 
 
