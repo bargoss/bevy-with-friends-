@@ -60,6 +60,9 @@ impl Plugin for DemoClientPlugin {
             .add_plugins(SharedPlugin)
             .add_plugins(ClientPlugin::new(plugin_config))
             .add_systems(Startup, init)
+
+            .add_systems(FixedUpdate, handle_simulated_tag_client.in_set(FixedUpdateSet::TickUpdate))
+            .add_systems(FixedUpdate, buffer_input.in_set(InputSystemSet::BufferInputs))
         ;
     }
 }

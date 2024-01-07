@@ -67,9 +67,9 @@ fn run_server(headless : bool) {
     } else {
         app_builder
             .add_plugins(DefaultPlugins)
+            //.add_systems(Update, draw_circle_view)
             .add_plugins(WorldInspectorPlugin::new())
             //.add_plugins(ShapePlugin::default())
-            //.add_systems(Update, draw_circle_view)
         ;
     }
 
@@ -78,13 +78,15 @@ fn run_server(headless : bool) {
 
 fn main() {
     // create a new thread
-    let server_thread = std::thread::spawn(move || -> anyhow::Result<()> {
+    let thread0 = std::thread::spawn(move || -> anyhow::Result<()> {
         run_server(true);
         //run_client(true);
         Ok(())
     });
 
 
-    //run_server(true);
+
+
+    //run_server(false);
     run_client(false);
 }

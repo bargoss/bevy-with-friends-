@@ -1,9 +1,14 @@
 use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy_vector_shapes::painter::ShapePainter;
+use lightyear::prelude::client::Predicted;
+use lightyear::prelude::Replicate;
+use lightyear::prelude::server::Server;
+use lightyear::shared::events::InputEvent;
 use crate::defender_game::utils;
-use crate::lightyear_demo::shared::ReplicatedPosition;
+use crate::lightyear_demo::shared::{Inputs, MyProtocol, ReplicatedPosition};
 use super::components::*;
+use super::server::Global;
 
 pub fn draw_circle_view(
     circle_views: Query<(&CircleView, &Transform)>,
@@ -21,37 +26,40 @@ pub fn draw_circle_view(
 }
 
 /*
-    TickUpdate,    /// Main loop (with physics, game logic) during FixedUpda
-    Main,
-    MainFlush,
-    */
-pub fn create_replicated_transforms(
-    mut commands: Commands,
-    // if it doesnt have transform
-    query: Query<(Entity, &ReplicatedPosition), Without<Transform>>,
+
+//app.add_systems(FixedUpdate, movement.in_set(FixedUpdateSet::Main));
+pub fn pawn_movement(
+    mut query: Query<(Entity, &mut Transform), With<Predicted>>,
+    mut input_reader: EventReader<InputEvent<Inputs>>,
+    global: Res<Global>,
+    server: Res<Server<MyProtocol>>,
 ){
-    query.for_each(|(entity, replicated_position)|{
-        commands.entity(entity).insert(TransformBundle{
-            local: Transform::from_translation(Vec3::new(replicated_position.0.x, replicated_position.0.y, replicated_position.0.z)),
-            ..Default::default()
-        });
-    });
+    for input in input_reader.read() {
+        let client_id = input.context();
+        if let Some(input) = input.input() {
+            if let Some(player_entity) = global.client_id_to_entity_id.get(client_id) {
+                if let Ok(position) = query.get_mut(*player_entity) {
+                    shared_movement_behaviour(position, input);
+                }
+            }
+        }
+    }
 }
-pub fn pull_replicated_positions(
-    mut query: Query<(&ReplicatedPosition, &mut Transform)>,
-){
-    query.for_each_mut(|(replicated_position, mut transform)|{
-        transform.translation.x = replicated_position.0.x;
-        transform.translation.y = replicated_position.0.y;
-        transform.translation.z = replicated_position.0.z;
-    });
+
+// app.add_systems(FixedUpdate, movement.in_set(FixedUpdateSet::Main));
+pub(crate) fn movement(
+    mut position_query: Query<&mut PlayerPosition, With<Predicted>>,
+    mut input_reader: EventReader<InputEvent<Inputs>>,
+) {
+    if PlayerPosition::mode() != ComponentSyncMode::Full {
+        return;
+    }
+    for input in input_reader.read() {
+        if let Some(input) = input.input() {
+            for mut position in position_query.iter_mut() {
+                shared_movement_behaviour(position, input);
+            }
+        }
+    }
 }
-pub fn push_replicated_positions(
-    mut query: Query<(&mut ReplicatedPosition, &Transform)>,
-){
-    query.for_each_mut(|(mut replicated_position, transform)|{
-        replicated_position.0.x = transform.translation.x;
-        replicated_position.0.y = transform.translation.y;
-        replicated_position.0.z = transform.translation.z;
-    });
-}
+*/

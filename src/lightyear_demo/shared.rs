@@ -1,12 +1,15 @@
 use std::time::Duration;
+use bevy::input::Input;
 use bevy::log::Level;
-use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs};
+use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs, Commands, Transform, Without, Query, TransformBundle, ResMut, KeyCode, Res, With};
 use bevy::utils::EntityHashSet;
 use derive_more::{Add, Mul};
 use lightyear::prelude::*;
+use lightyear::prelude::client::{Client, InputSystemSet, Predicted};
 use serde::{Deserialize, Serialize};
 use crate::lightyear_demo::components::*;
-use crate::lightyear_demo::systems::{create_replicated_transforms, pull_replicated_positions, push_replicated_positions};
+//use crate::lightyear_demo::systems::pawn_movement;
+//use crate::lightyear_demo::systems;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Direction {
@@ -124,6 +127,121 @@ impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
         //app.add_systems(FixedUpdate, replicated_position_transform_sync.in_set(FixedUpdateSet::Main));
         app.add_systems(FixedUpdate, (create_replicated_transforms,pull_replicated_positions).chain().in_set(FixedUpdateSet::TickUpdate));
+
+        //app.add_systems(FixedUpdate, pawn_movement.in_set(FixedUpdateSet::Main));
+
         app.add_systems(FixedUpdate, push_replicated_positions.in_set(FixedUpdateSet::MainFlush));
     }
 }
+
+/*
+    TickUpdate,    /// Main loop (with physics, game logic) during FixedUpda
+    Main,
+    MainFlush,
+*/
+
+pub fn create_replicated_transforms(
+    mut commands: Commands,
+    // if it doesnt have transform
+    query: Query<(Entity, &ReplicatedPosition), Without<Transform>>,
+){
+    query.for_each(|(entity, replicated_position)|{
+        commands.entity(entity).insert(TransformBundle{
+            local: Transform::from_translation(Vec3::new(replicated_position.0.x, replicated_position.0.y, replicated_position.0.z)),
+            ..Default::default()
+        });
+    });
+}
+pub fn pull_replicated_positions(
+    mut query: Query<(&ReplicatedPosition, &mut Transform)>,
+){
+    query.for_each_mut(|(replicated_position, mut transform)|{
+        transform.translation.x = replicated_position.0.x;
+        transform.translation.y = replicated_position.0.y;
+        transform.translation.z = replicated_position.0.z;
+    });
+}
+pub fn push_replicated_positions(
+    mut query: Query<(&mut ReplicatedPosition, &Transform)>,
+){
+    query.for_each_mut(|(mut replicated_position, transform)|{
+        replicated_position.0.x = transform.translation.x;
+        replicated_position.0.y = transform.translation.y;
+        replicated_position.0.z = transform.translation.z;
+    });
+}
+#[derive(Component)]
+pub struct Simulated;
+pub fn handle_simulated_tag_client(
+    //query: Query<(Entity), With<Predicted>, Without<Simulated>>
+    to_tag: Query<(Entity, &Predicted),Without<Simulated>>,
+    to_un_tag: Query<(Entity, &Simulated),Without<Predicted>>,
+    mut commands: Commands,
+){
+    to_tag.for_each(|(entity, _)|{
+        commands.entity(entity).insert(Simulated);
+    });
+
+    to_un_tag.for_each(|(entity, _)|{
+        commands.entity(entity).remove::<Simulated>();
+    });
+}
+pub fn handle_simulated_tag_server(
+    to_tag: Query<(Entity, &Replicate),Without<Simulated>>,
+    to_un_tag: Query<(Entity, &Simulated),Without<Replicate>>,
+    mut commands: Commands,
+){
+    to_tag.for_each(|(entity, _)|{
+        commands.entity(entity).insert(Simulated);
+    });
+
+    to_un_tag.for_each(|(entity, _)|{
+        commands.entity(entity).remove::<Simulated>();
+    });
+}
+
+
+pub(crate) fn buffer_input(mut client: ResMut<Client<MyProtocol>>, keypress: Res<Input<KeyCode>>) {
+    let mut input = Direction {
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+    };
+    if keypress.pressed(KeyCode::W) || keypress.pressed(KeyCode::Up) {
+        input.up = true;
+    }
+    if keypress.pressed(KeyCode::S) || keypress.pressed(KeyCode::Down) {
+        input.down = true;
+    }
+    if keypress.pressed(KeyCode::A) || keypress.pressed(KeyCode::Left) {
+        input.left = true;
+    }
+    if keypress.pressed(KeyCode::D) || keypress.pressed(KeyCode::Right) {
+        input.right = true;
+    }
+
+    client.add_input(Inputs::Direction(input))
+
+    //// always remember to send an input message
+    //return client.add_input(Inputs::None);
+}
+
+
+// T is #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub struct InputComponent<T>(pub T);
+
+type MyInputComponent = InputComponent<Direction>;
+
+
+//pub fn sync_input_component_server<T>(
+//    mut query: Query<(Entity, &mut InputComponent<T>), With<Predicted>>,
+//    mut input_reader: EventReader<InputEvent<Inputs>>,
+//    global: Res<Global>,
+//    server: Res<Server<MyProtocol>>,
+//) {
+//    for (entity, input, player_id) in query.iter_mut() {
+//        client.add_input_with_context(*player_id, input.clone());
+//    }
+//}

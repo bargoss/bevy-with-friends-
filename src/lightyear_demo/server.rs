@@ -48,6 +48,9 @@ impl Plugin for DemoServerPlugin {
             .add_plugins(ServerPlugin::new(plugin_config))
             .add_plugins(SharedPlugin)
             .init_resource::<Global>()
+
+            .add_systems(FixedUpdate, handle_simulated_tag_server.in_set(FixedUpdateSet::TickUpdate))
+
             .add_systems(Update, handle_connections)
             .add_systems(Startup, init)
         ;
@@ -57,7 +60,7 @@ impl Plugin for DemoServerPlugin {
 
 
 #[derive(Resource, Default)]
-struct Global {
+pub struct Global {
     pub client_id_to_entity_id: HashMap<ClientId, Entity>,
 }
 
@@ -75,7 +78,8 @@ fn handle_connections(
         let l = 0.5;
 
         let entity = commands.spawn(PawnBundle::new(
-            Vec3::new(6.0, 0.0, 0.0),
+            // psuedo random pos
+            Vec3::new((client_id % 10) as f32, (client_id / 10) as f32, 0.0),
             0.5,
             Color::hsl(h, s, l),
             *client_id,
