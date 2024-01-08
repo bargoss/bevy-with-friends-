@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use derive_more::{Add, Mul};
-use lightyear::_reexport::{InterpolatedComponent, LinearInterpolation};
+use lightyear::_reexport::{InterpolatedComponent, LinearInterpolation, ShouldBePredicted};
 use lightyear::client::interpolation::InterpFn;
 use lightyear::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -111,6 +111,7 @@ pub struct ProjectileBundle{
     transform_bundle: TransformBundle,
     circle_view: CircleView,
     replicate: Replicate,
+    //should_be_predicted: ShouldBePredicted,
 }
 
 impl ProjectileBundle{
@@ -142,6 +143,7 @@ impl ProjectileBundle{
                 interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
                 ..Default::default()
             },
+            //should_be_predicted: ShouldBePredicted{client_entity: None},
         }
     }
 }

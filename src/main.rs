@@ -1,12 +1,12 @@
 use bevy::{DefaultPlugins, MinimalPlugins};
 use bevy::app::Plugins;
 use bevy::prelude::*;
-use bevy::prelude::IntoSystemConfigs;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_vector_shapes::prelude::*;
 
 use crate::lightyear_demo::client::DemoClientPlugin;
 use crate::lightyear_demo::server::DemoServerPlugin;
+use crate::lightyear_demo::shared::FixedUpdateMainSet;
 use crate::lightyear_demo::systems::*;
 
 mod utils;
@@ -30,6 +30,7 @@ fn run_client(headless : bool) {
     } else {
         app_builder
             .add_plugins(DefaultPlugins)
+            //.add_systems(FixedUpdate, draw_circle_view.after(FixedUpdateMainSet::Push))
             .add_systems(Update, draw_circle_view)
             .add_plugins(WorldInspectorPlugin::new())
             .add_plugins(ShapePlugin::default())

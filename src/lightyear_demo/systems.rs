@@ -207,8 +207,9 @@ pub fn handle_pawn_shooting(
 
     pawn_query.for_each_mut(|(entity, mut pawn, pawn_input, mut transform, player_id)|{
         //pawn.last_attack_time
-        if pawn_input.attack && global_time.simulation_tick.0 - pawn.last_attack_time.0 > cooldown_time_in_ticks {
-            pawn.last_attack_time = global_time.simulation_tick;
+        //if pawn_input.attack && global_time.simulation_tick.0 - pawn.last_attack_time.0 > cooldown_time_in_ticks {
+        //    pawn.last_attack_time = global_time.simulation_tick;
+        if(global_time.simulation_tick.0 % 50 == 49){
             log::info!("SHOOTING");
             /*
                     owner_client_id: ClientId,
@@ -229,9 +230,10 @@ pub fn handle_pawn_shooting(
 
 
             //whats even client id
-            //projectile.insert(lightyear::_reexport::ShouldBePredicted{
-            //    client_entity :  Some(entity_id),
-            //});
+            projectile.insert(lightyear::_reexport::ShouldBePredicted{
+                //client_entity :  Some(entity_id),
+                client_entity :  Some(entity_id),
+            });
 
 
         }

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use bevy::input::Input;
 use bevy::log::Level;
-use bevy::prelude::{App, Bundle, Color, Commands, Component, Deref, DerefMut, Entity, FixedUpdate, IntoSystemConfigs, KeyCode, Plugin, Query, Res, ResMut, Resource, SystemSet, Vec2, Vec3, Without};
+use bevy::prelude::{App, Bundle, Color, Commands, Component, Deref, DerefMut, Entity, FixedUpdate, IntoSystemConfigs, KeyCode, Plugin, Query, Res, ResMut, Resource, SystemSet, Update, Vec2, Vec3, Without};
 use bevy::prelude::IntoSystemSetConfigs;
 use derive_more::{Add, Mul};
 use lightyear::prelude::*;
@@ -52,6 +52,9 @@ pub struct PlayerId(ClientId);
 impl PlayerId {
     pub fn new(client_id: ClientId) -> Self {
         Self(client_id)
+    }
+    pub fn get_client_id(&self) -> ClientId {
+        self.0
     }
 }
 
@@ -160,6 +163,7 @@ impl Plugin for SharedPlugin {
 
         app.add_systems(FixedUpdate, handle_pawn_movement.in_set(FixedUpdateMainSet::Update));
         app.add_systems(FixedUpdate, handle_pawn_shooting.in_set(FixedUpdateMainSet::Update));
+        //app.add_systems(Update, handle_pawn_shooting);
         app.add_systems(FixedUpdate, handle_projectile.in_set(FixedUpdateMainSet::Update));
 
 
