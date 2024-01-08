@@ -2,13 +2,14 @@ use bevy::ecs::component::Tick;
 use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy_vector_shapes::painter::ShapePainter;
-use lightyear::prelude::client::{Client, Predicted};
+use lightyear::client::components::ComponentSyncMode;
+use lightyear::prelude::client::{Client, Predicted, SyncComponent};
 use lightyear::prelude::ClientId;
 use lightyear::prelude::server::Server;
 use lightyear::shared::events::InputEvent;
 
 use crate::defender_game::utils;
-use crate::lightyear_demo::shared::{GlobalTime, Inputs, MyProtocol, PlayerId, ReplicatedPosition, Simulated};
+use crate::lightyear_demo::shared::{GlobalTime, Inputs, MyProtocol, PlayerId, PlayerPosition, ReplicatedPosition, Simulated};
 
 use super::components::*;
 use super::server::Global;
@@ -68,6 +69,9 @@ pub fn handle_pawn_input_client(
     mut pawn_query: Query<(&Pawn, &mut PawnInput), With<Predicted>>,
     mut input_reader: EventReader<InputEvent<Inputs>>,
 ){
+    //if PlayerPosition::mode() != ComponentSyncMode::Full {
+    //    return;
+    //}
     for input in input_reader.read() {
         if let Some(input) = input.input() {
             for mut data in pawn_query.iter_mut() {
@@ -190,35 +194,17 @@ pub fn handle_projectile(
 }
 
 
-// mut client: ResMut<Client<MyProtocol>>,
+
 pub fn handle_pawn_shooting(
     mut pawn_query: Query<(Entity,&mut Pawn, &PawnInput, &Transform, &PlayerId), With<Simulated>>,
     global_time: Res<GlobalTime>,
-    //time_manager: TimeManager???,
-    //tick_manager: Res<TickManager>,
     mut commands: Commands,
 ){
-    let cooldown_time_in_ticks = 10;
-
-    //let current_tick = tick_manager.current_tick();
-    //let current_time = time_manager.current_time();
-    let current_tick = Tick::new(0);
-
-
     pawn_query.for_each_mut(|(entity, mut pawn, pawn_input, mut transform, player_id)|{
-        //pawn.last_attack_time
-        //if pawn_input.attack && global_time.simulation_tick.0 - pawn.last_attack_time.0 > cooldown_time_in_ticks {
-        //    pawn.last_attack_time = global_time.simulation_tick;
-        if(global_time.simulation_tick.0 % 50 == 49){
+        if pawn_input.attack && global_time.simulation_tick.0 % 50 == 49 {
             log::info!("SHOOTING");
-            /*
-                    owner_client_id: ClientId,
-                    start_tick : Tick,
-                    position: Vec3,
-                    velocity: Vec3,
-            */
-            let shoot_dir = pawn_input.movement_direction;
 
+            let shoot_dir = pawn_input.movement_direction;
 
             let mut projectile = commands.spawn(ProjectileBundle::new(
                 *player_id.clone(),
@@ -228,14 +214,9 @@ pub fn handle_pawn_shooting(
             ));
             let entity_id = projectile.id();
 
-
-            //whats even client id
             projectile.insert(lightyear::_reexport::ShouldBePredicted{
-                //client_entity :  Some(entity_id),
                 client_entity :  Some(entity_id),
             });
-
-
         }
     });
 }

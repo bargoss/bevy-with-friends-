@@ -25,9 +25,9 @@ impl Plugin for DemoServerPlugin {
             .with_protocol_id(PROTOCOL_ID)
             .with_key(KEY);
         let link_conditioner = LinkConditionerConfig {
-            incoming_latency: Duration::from_millis(200),
-            incoming_jitter: Duration::from_millis(20),
-            incoming_loss: 0.05,
+            incoming_latency: Duration::from_millis(0),
+            incoming_jitter: Duration::from_millis(0),
+            incoming_loss: 0.00,
         };
         //let transport = match self.transport {
         //    Transports::Udp => TransportConfig::UdpSocket(server_addr),
@@ -82,11 +82,9 @@ fn handle_connections(
 ) {
     for connection in connections.read() {
         let client_id = connection.context();
-        // Generate pseudo random color from client id.
         let h = (((client_id * 30) % 360) as f32) / 360.0;
         let s = 0.8;
         let l = 0.5;
-
         let entity = commands.spawn(PawnBundle::new(
             // psuedo random pos
             Vec3::new((client_id % 10) as f32, (client_id / 10) as f32, 0.0),
@@ -94,9 +92,7 @@ fn handle_connections(
             Color::hsl(h, s, l),
             *client_id,
         ));
-
         log::info!("SPAWNED CLIENT ENTITY");
-
         // Add a mapping from client id to entity id
         global
             .client_id_to_entity_id
