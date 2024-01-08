@@ -3,7 +3,6 @@ use bevy::DefaultPlugins;
 use bevy::prelude::{Plugin, Startup, Update};
 use bevy::prelude::IntoSystemConfigs;
 use bevy_framepace::FramepacePlugin;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier2d::plugin::{NoUserData, RapierPhysicsPlugin};
 use bevy_rapier2d::prelude::RapierDebugRenderPlugin;
 use bevy_vector_shapes::ShapePlugin;
@@ -24,7 +23,6 @@ impl Plugin for DefenderGamePlugin{
 
         app
             .add_plugins(DefaultPlugins)
-            .add_plugins(WorldInspectorPlugin::new())
             .add_plugins(ShapePlugin::default())
             .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1.0))
             .add_plugins(RapierDebugRenderPlugin::default())
