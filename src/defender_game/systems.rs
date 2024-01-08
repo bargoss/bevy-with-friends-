@@ -4,8 +4,8 @@ use bevy::input::mouse::MouseButtonInput;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::rapier::prelude::InteractionGroups;
 use bevy_vector_shapes::prelude::*;
+
 use crate::defender_game::components::*;
 use crate::defender_game::events::*;
 use crate::defender_game::resources::*;

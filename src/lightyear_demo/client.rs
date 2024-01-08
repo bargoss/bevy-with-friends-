@@ -1,16 +1,14 @@
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::net::{Ipv4Addr, SocketAddr};
 use std::time::Duration;
-use lightyear::prelude::*;
+
 use bevy::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use bevy_vector_shapes::ShapePlugin;
-use lightyear::client::interpolation::plugin::InterpolationSet;
+use lightyear::prelude::*;
 use lightyear::prelude::client::*;
-use lightyear::shared::systems::tick::increment_tick;
+
 use crate::lightyear_demo::{CLIENT_PORT, KEY, PROTOCOL_ID, SERVER_PORT};
 use crate::lightyear_demo::systems::*;
-use super::shared::*;
 
+use super::shared::*;
 
 // define a bevy plugin
 

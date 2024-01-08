@@ -2,17 +2,14 @@ use bevy::ecs::component::Tick;
 use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy_vector_shapes::painter::ShapePainter;
-use lightyear::_reexport::{TickManager, TimeManager, WrappedTime};
-use lightyear::client::connection::Connection;
-use lightyear::client::sync::SyncManager;
 use lightyear::prelude::client::{Client, Predicted};
-use lightyear::prelude::{ClientId, Replicate};
+use lightyear::prelude::ClientId;
 use lightyear::prelude::server::Server;
 use lightyear::shared::events::InputEvent;
-use log::log;
+
 use crate::defender_game::utils;
 use crate::lightyear_demo::shared::{GlobalTime, Inputs, MyProtocol, PlayerId, ReplicatedPosition, Simulated};
-use crate::lightyear_demo::shared::Components::ShouldBePredicted;
+
 use super::components::*;
 use super::server::Global;
 
@@ -231,10 +228,10 @@ pub fn handle_pawn_shooting(
             let entity_id = projectile.id();
 
 
-            whats even client id
-            projectile.insert(lightyear::_reexport::ShouldBePredicted{
-                client_entity :  Some(entity_id),
-            });
+            //whats even client id
+            //projectile.insert(lightyear::_reexport::ShouldBePredicted{
+            //    client_entity :  Some(entity_id),
+            //});
 
 
         }

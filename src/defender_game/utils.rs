@@ -1,8 +1,6 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::Collider;
 use bevy_vector_shapes::prelude::{DiscPainter, LinePainter, ShapePainter};
 use rand::Rng;
-use crate::defender_game::components::*;
 
 pub fn draw_o(position : Vec3, radius: f32, color: Color, painter: &mut ShapePainter){
     painter.thickness = 0.5;

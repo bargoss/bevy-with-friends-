@@ -1,20 +1,17 @@
-mod utils;
-use utils::*;
-
-mod defender_game;
-mod lightyear_demo;
-
 use bevy::{DefaultPlugins, MinimalPlugins};
 use bevy::app::Plugins;
 use bevy::prelude::*;
-
-use bevy_vector_shapes::prelude::*;
 use bevy::prelude::IntoSystemConfigs;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
-use serde::de::Unexpected::Option;
-use crate::lightyear_demo::server::DemoServerPlugin;
+use bevy_vector_shapes::prelude::*;
+
 use crate::lightyear_demo::client::DemoClientPlugin;
+use crate::lightyear_demo::server::DemoServerPlugin;
 use crate::lightyear_demo::systems::*;
+
+mod utils;
+mod defender_game;
+mod lightyear_demo;
 
 const GRID_LEN: f32 = 5.0;
 

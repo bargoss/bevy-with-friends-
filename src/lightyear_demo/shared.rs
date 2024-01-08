@@ -1,19 +1,17 @@
 use std::time::Duration;
+
 use bevy::input::Input;
 use bevy::log::Level;
-use bevy::prelude::{default, Bundle, Color, Component, Deref, DerefMut, Entity, Vec2, Vec3, Plugin, App, FixedUpdate, IntoSystemConfigs, Commands, Transform, Without, Query, TransformBundle, ResMut, KeyCode, Res, With, EventReader, SystemSet, Resource};
-use bevy::utils::EntityHashSet;
-use derive_more::{Add, Mul};
-use lightyear::client::events::InputEvent;
-use lightyear::prelude::*;
-use lightyear::prelude::client::{Client, InputSystemSet, Predicted};
-use lightyear::prelude::server::Server;
-use serde::{Deserialize, Serialize};
-use crate::lightyear_demo::components::*;
-use crate::lightyear_demo::server::Global;
-use crate::lightyear_demo::systems::*;
+use bevy::prelude::{App, Bundle, Color, Commands, Component, Deref, DerefMut, Entity, FixedUpdate, IntoSystemConfigs, KeyCode, Plugin, Query, Res, ResMut, Resource, SystemSet, Vec2, Vec3, Without};
 use bevy::prelude::IntoSystemSetConfigs;
-use lightyear::_reexport::WrappedTime;
+use derive_more::{Add, Mul};
+use lightyear::prelude::*;
+use lightyear::prelude::client::{Client, Predicted};
+use serde::{Deserialize, Serialize};
+
+use crate::lightyear_demo::components::*;
+use crate::lightyear_demo::systems::*;
+
 //use crate::lightyear_demo::systems::pawn_movement;
 //use crate::lightyear_demo::systems;
 
