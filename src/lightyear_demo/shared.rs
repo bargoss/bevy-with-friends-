@@ -182,7 +182,6 @@ impl Plugin for SharedPlugin {
 #[derive(Component)]
 pub struct Simulated;
 pub fn handle_simulated_tag_client(
-    //query: Query<(Entity), With<Predicted>, Without<Simulated>>
     to_tag: Query<(Entity, &Predicted),Without<Simulated>>,
     to_un_tag: Query<(Entity, &Simulated),Without<Predicted>>,
     mut commands: Commands,
