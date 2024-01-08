@@ -104,7 +104,7 @@ pub struct SimpleVelocity{
 
 #[derive(Bundle)]
 pub struct ProjectileBundle{
-    owner_id: PlayerId,
+    player_id: PlayerId,
     projectile: Projectile,
     simple_velocity: SimpleVelocity,
     replicated_position : ReplicatedPosition,
@@ -122,7 +122,7 @@ impl ProjectileBundle{
         velocity: Vec3,
     ) -> Self{
         Self{
-            owner_id: PlayerId::new(owner_client_id),
+            player_id: PlayerId::new(owner_client_id),
             projectile: Projectile{
                 start_tick
             },

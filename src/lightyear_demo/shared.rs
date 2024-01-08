@@ -162,7 +162,7 @@ impl Plugin for SharedPlugin {
             .in_set(FixedUpdateMainSet::Pull));
 
         app.add_systems(FixedUpdate, handle_pawn_movement.in_set(FixedUpdateMainSet::Update));
-        app.add_systems(FixedUpdate, handle_pawn_shooting.in_set(FixedUpdateMainSet::Update));
+        app.add_systems(FixedUpdate, handle_pawn_shooting.in_set(FixedUpdateMainSet::Update)); //.after SimulatedTag
         //app.add_systems(Update, handle_pawn_shooting);
         app.add_systems(FixedUpdate, handle_projectile.in_set(FixedUpdateMainSet::Update));
 
