@@ -32,7 +32,8 @@ fn run_client(headless : bool) {
         app_builder
             .add_plugins(DefaultPlugins)
             //.add_systems(FixedUpdate, draw_circle_view.after(FixedUpdateMainSet::Push))
-            .add_systems(Update, draw_circle_view)
+            .add_systems(PostUpdate, draw_circle_view)
+            .add_systems(PreUpdate, draw_circle_view)
             .add_plugins(WorldInspectorPlugin::new())
             .add_plugins(FilterQueryInspectorPlugin::<With<SeeSpawnHash>>::default())
             .register_type::<SeeSpawnHash>() // you need to register your type to display it

@@ -144,12 +144,18 @@ pub fn push_replicated_positions(
 
 pub fn handle_pawn_movement(
     mut pawn_query: Query<(&Pawn, &PawnInput, &mut Transform), With<Simulated>>,
+    global_time: Res<GlobalTime>
 ){
-    let speed = 0.05;
+
+    let current_tick = global_time.simulation_tick;
+    let float_from_tick = current_tick.0 as f32 * 0.05;
+    let sin = float_from_tick.sin();
+    let speed = 0.05 * sin;
+
 
     pawn_query.for_each_mut(|(_, pawn_input, mut transform)|{
         let movement_direction = pawn_input.movement_direction;
-        transform.translation.x += movement_direction.x * speed;
+        transform.translation.x += speed;
         transform.translation.y += movement_direction.y * speed;
     });
 
@@ -211,7 +217,8 @@ pub fn handle_pawn_shooting(
             log::info!("SHOOTING");
             pawn.last_attack_time = current_tick;
 
-            let shoot_dir = pawn_input.movement_direction;
+            //let shoot_dir = pawn_input.movement_direction;
+            let shoot_dir = Vec3::new(0.0, -1.0, 0.0);
 
             //let projectile = commands.spawn(ProjectileBundle::new(
             //    *player_id.clone(),

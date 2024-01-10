@@ -80,37 +80,34 @@ impl Plugin for DemoClientPlugin {
                 PredictionSet::EntityDespawn,*/
 
         //destroy_all_predicted_spawns,
-            .add_systems(FixedUpdate, (destroy_all_predicted_spawns,apply_deferred).chain().in_set(PredictionSet::Rollback))
+            //.add_systems(FixedUpdate, (destroy_all_predicted_spawns,apply_deferred).chain().in_set(PredictionSet::Rollback))
 
             .add_systems(
                 FixedUpdate,
                 (
                     handle_simulated_tag_client,
-                    handle_simulated_tag_for_predicted_spawns_client,
+                    //handle_simulated_tag_for_predicted_spawns_client,
                     update_time_client,
-                    apply_deferred,
 
                     //destroy_old_predicted_spawns,
                     //destroy_reconciled_predicted_spawns,
                 ).chain() .in_set(FixedUpdateMainSet::Pull)
             )
-            .add_systems(
-                FixedUpdate,
-                (
-                    destroy_reconciled_predicted_spawns,
-                    apply_deferred,
-                ).chain() .in_set(FixedUpdateMainSet::AfterPull)
-            )
+            //.add_systems(
+//                FixedUpdate,
+//                (
+//                    //destroy_reconciled_predicted_spawns,
+//                ).chain() .in_set(FixedUpdateMainSet::AfterPull)
+            //)
 
 
 
-            .add_systems(
-                FixedUpdate,
-                (
-                    destroy_illegal_replicated_components_on_client,
-                    apply_deferred,
-                ).in_set(FixedUpdateMainSet::Push)
-            )
+            //.add_systems(
+            //    FixedUpdate,
+            //    (
+            //        //destroy_illegal_replicated_components_on_client,
+            //    ).in_set(FixedUpdateMainSet::Push)
+            //)
 
             .add_systems(FixedUpdate, handle_pawn_input_client
                 .in_set(FixedUpdateMainSet::Pull))
