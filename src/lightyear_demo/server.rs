@@ -9,7 +9,7 @@ use lightyear::prelude::server::*;
 
 use crate::lightyear_demo::{KEY, PROTOCOL_ID, SERVER_PORT};
 use crate::lightyear_demo::components::PawnBundle;
-use crate::lightyear_demo::systems::{handle_pawn_input_server, update_time_server};
+use crate::lightyear_demo::systems::{handle_pawn_input_server, handle_pawn_shooting, update_time_server};
 
 use super::shared::*;
 
@@ -25,7 +25,7 @@ impl Plugin for DemoServerPlugin {
             .with_protocol_id(PROTOCOL_ID)
             .with_key(KEY);
         let link_conditioner = LinkConditionerConfig {
-            incoming_latency: Duration::from_millis(0),
+            incoming_latency: Duration::from_millis(200),
             incoming_jitter: Duration::from_millis(0),
             incoming_loss: 0.00,
         };
@@ -61,6 +61,7 @@ impl Plugin for DemoServerPlugin {
 
             .add_systems(FixedUpdate, update_time_server.in_set(FixedUpdateMainSet::Pull))
 
+            .add_systems(FixedUpdate, handle_pawn_shooting.in_set(FixedUpdateMainSet::Update))
 
             .add_systems(Update, handle_connections)
             .add_systems(Startup, init);

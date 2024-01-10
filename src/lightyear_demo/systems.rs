@@ -4,12 +4,13 @@ use bevy::prelude::*;
 use bevy_vector_shapes::painter::ShapePainter;
 use lightyear::client::components::ComponentSyncMode;
 use lightyear::prelude::client::{Client, Predicted, SyncComponent};
-use lightyear::prelude::ClientId;
+use lightyear::prelude::{ClientId, NetworkTarget, Replicate};
 use lightyear::prelude::server::Server;
 use lightyear::shared::events::InputEvent;
 
 use crate::defender_game::utils;
 use crate::lightyear_demo::shared::{GlobalTime, Inputs, MyProtocol, PlayerId, PlayerPosition, ReplicatedPosition, Simulated};
+use crate::lightyear_demo::shared::ComponentsKind::ShouldBePredicted;
 
 use super::components::*;
 use super::server::Global;
@@ -184,7 +185,7 @@ pub fn handle_projectile(
     mut commands: Commands
 ){
     projectile_query.for_each_mut(|(mut projectile, velocity, mut transform)|{
-        transform.translation += velocity.value * 0.05;
+        transform.translation += velocity.value * 0.15;
 
         //projectile.life_time -= 1;
         //if projectile.life_time <= 0 {
@@ -201,22 +202,103 @@ pub fn handle_pawn_shooting(
     mut commands: Commands,
 ){
     pawn_query.for_each_mut(|(entity, mut pawn, pawn_input, mut transform, player_id)|{
-        if pawn_input.attack && global_time.simulation_tick.0 % 50 == 49 {
+        let last_shot_tick = pawn.last_attack_time;
+        let current_tick = global_time.simulation_tick;
+        let ticks_since_last_shot = current_tick.0 - last_shot_tick.0;
+        let cooldown = 50;
+        let cooldown_finished = ticks_since_last_shot > cooldown;
+        if pawn_input.attack && cooldown_finished { // global_time.simulation_tick.0 % 50 == 49
             log::info!("SHOOTING");
+            pawn.last_attack_time = current_tick;
 
             let shoot_dir = pawn_input.movement_direction;
 
-            let mut projectile = commands.spawn(ProjectileBundle::new(
-                *player_id.clone(),
-                global_time.simulation_tick,
-                Vec3::new(transform.translation.x, transform.translation.y, transform.translation.z),
-                shoot_dir,
-            ));
-            let entity_id = projectile.id();
+            //let projectile = commands.spawn(ProjectileBundle::new(
+            //    *player_id.clone(),
+            //    global_time.simulation_tick,
+            //    Vec3::new(transform.translation.x, transform.translation.y, transform.translation.z),
+            //    shoot_dir,
+            //));
+            //let entity_id = projectile.id();
 
-            projectile.insert(lightyear::_reexport::ShouldBePredicted{
-                client_entity :  Some(entity_id),
-            });
+
+            // remove Replicate component
+            //commands.entity(entity_id).remove::<Replicate>();
+
+
+            let owner_client_id = *player_id.clone();
+            let start_tick = global_time.simulation_tick;
+            let position = Vec3::new(transform.translation.x, transform.translation.y, transform.translation.z);
+            let velocity = shoot_dir;
+
+            let entity_id = commands.spawn_empty()
+                .insert(PlayerId::new(owner_client_id))
+                .insert(Projectile{
+                    start_tick
+                })
+                .insert(SimpleVelocity{
+                    value: velocity,
+                })
+                .insert(ReplicatedPosition(position))
+                .insert(TransformBundle{
+                    local: Transform::from_translation(position),
+                    ..Default::default()
+                })
+                .insert(CircleView{
+                    radius: 0.25,
+                    color: Color::RED,
+                })
+                .insert(Replicate{
+                    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
+                    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
+                    ..Default::default()
+                })
+                //.insert(SpawnHash{
+                //    hash: 0,
+                //    spawned_tick: start_tick,
+                //}).id()
+                ;
+
+            //commands.entity(entity_id).insert(lightyear::_reexport::ShouldBePredicted{
+            //    client_entity: Some(entity_id),
+            //});
+
+            /*commands.spawn({
+
+                PlayerId::new(owner_client_id);
+                Projectile{
+                    start_tick
+                };
+                SimpleVelocity{
+                    value: velocity,
+                };
+                ReplicatedPosition(position);
+                TransformBundle{
+                    local: Transform::from_translation(position),
+                    ..Default::default()
+                };
+                CircleView{
+                    radius: 0.25,
+                    color: Color::RED,
+                };
+                //Replicate{
+                //    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
+                //    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
+                //    ..Default::default()
+                //};
+                SpawnHash{
+                    hash: 0,
+                    spawned_tick: start_tick,
+                }
+                //should_be_predicted: ShouldBePredicted{client_entity: None},
+            });*/
+
+
+            //projectile.insert(lightyear::_reexport::ShouldBePredicted{
+            //    client_entity :  Some(entity_id),
+            //});
+
+
         }
     });
 }

@@ -1,8 +1,15 @@
+use std::any::Any;
+use std::collections::{HashMap, HashSet};
+use bevy::asset::AssetContainer;
 use bevy::prelude::*;
+use bevy::reflect::{ReflectMut, ReflectOwned, ReflectRef, TypeInfo};
+use bevy_inspector_egui::InspectorOptions;
 use derive_more::{Add, Mul};
 use lightyear::_reexport::{InterpolatedComponent, LinearInterpolation, ShouldBePredicted};
+use lightyear::client::components::Confirmed;
 use lightyear::client::interpolation::InterpFn;
 use lightyear::prelude::*;
+use lightyear::prelude::client::{Interpolated, Predicted};
 use serde::{Deserialize, Serialize};
 
 use crate::lightyear_demo::shared::*;
@@ -111,7 +118,7 @@ pub struct ProjectileBundle{
     transform_bundle: TransformBundle,
     circle_view: CircleView,
     replicate: Replicate,
-    //should_be_predicted: ShouldBePredicted,
+    spawn_hash: SpawnHash,
 }
 
 impl ProjectileBundle{
@@ -143,7 +150,105 @@ impl ProjectileBundle{
                 interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
                 ..Default::default()
             },
+            spawn_hash: SpawnHash{
+                hash: 0,
+                spawned_tick: start_tick,
+            }
             //should_be_predicted: ShouldBePredicted{client_entity: None},
         }
     }
 }
+
+// where T is Component
+#[derive(Resource)]
+pub struct PredictedSpawnIndexing where
+{
+    pub value : HashMap<SpawnHash, Entity>,
+}
+pub trait IndexComponent where Self: Component + PartialEq{
+    fn get_value(&self) -> u32;
+}
+
+
+// in client, in "push" system_set, after global time update
+pub fn destroy_old_predicted_spawns(
+    mut commands: Commands,
+    predicted_local_spawn : Query<(Entity, &SpawnHash), Without<Replicate>>,
+    global_time: Res<GlobalTime>,
+){
+    for (entity, spawn_hash) in predicted_local_spawn.iter() {
+        let age_in_ticks = global_time.simulation_tick.0 - spawn_hash.spawned_tick.0;
+        if age_in_ticks > 200{
+            commands.entity(entity).despawn_recursive();
+        }
+    }
+}
+pub fn destroy_all_predicted_spawns(
+    mut commands: Commands,
+    predicted_local_spawn : Query<(Entity, &SpawnHash), (Without<Confirmed>,Without<Predicted>)>,
+    global_time: Res<GlobalTime>,
+){
+    for (entity, spawn_hash) in predicted_local_spawn.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+pub fn destroy_reconciled_predicted_spawns(
+    mut commands: Commands,
+    local : Query<(Entity, &SpawnHash), (Without<Confirmed>, Without<Predicted>)>,
+    reconciled : Query<(Entity, &SpawnHash), With<Predicted>>,
+){
+    let reconciled : HashSet<SpawnHash> = reconciled.iter().map(|(_, hash)| hash.clone()).collect();
+
+    for (entity, spawn_hash) in local.iter() {
+        if reconciled.contains(spawn_hash){
+            commands.entity(entity).despawn_recursive();
+        }
+    }
+}
+
+pub fn destroy_illegal_replicated_components_on_client(
+    query : Query<(Entity, &SpawnHash), With<Replicate>>,
+    mut commands: Commands,
+){
+    // remove all "Replicated" components that are not in the predicted spawn index
+    for (entity, spawn_hash) in query.iter() {
+        log::info!("destroying illegal replicated component");
+        commands.entity(entity).remove::<Replicate>();
+    }
+}
+
+// destroy_old_predicted_spawns, destroy_reconciled_predicted_spawns
+#[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+pub struct SpawnHash{
+    pub hash: u32,
+    pub spawned_tick: Tick,
+}
+
+pub fn see_spawn_hash(
+    mut commands: Commands,
+    mut query : Query<(Entity, &SpawnHash), Changed<SpawnHash>>,
+){
+    for (entity, spawn_hash) in query.iter_mut() {
+        log::info!("see spawn hash");
+        commands.entity(entity).insert(SeeSpawnHash{
+            hash: spawn_hash.hash,
+            spawned_tick: *spawn_hash.spawned_tick,
+        });
+    }
+}
+
+#[derive(Default, Component, Debug,Reflect, InspectorOptions)]
+pub struct SeeSpawnHash{
+    pub hash: u32,
+    pub spawned_tick: u16,
+}
+
+// impl IndexComponent with this:
+//fn get_value(&self) -> u32
+//impl IndexComponent for SpawnHash{
+//    fn get_value(&self) -> u32 {
+//        // hash the hash with the tick
+//        self.hash ^ self.spawned_tick.0 as u32
+//    }
+//}

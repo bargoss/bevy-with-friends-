@@ -2,11 +2,11 @@ use std::time::Duration;
 
 use bevy::input::Input;
 use bevy::log::Level;
-use bevy::prelude::{App, Bundle, Color, Commands, Component, Deref, DerefMut, Entity, FixedUpdate, IntoSystemConfigs, KeyCode, Plugin, Query, Res, ResMut, Resource, SystemSet, Update, Vec2, Vec3, Without};
+use bevy::prelude::{App, Bundle, Color, Commands, Component, Deref, DerefMut, Entity, FixedUpdate, IntoSystemConfigs, KeyCode, Or, Plugin, Query, Res, ResMut, Resource, SystemSet, Update, Vec2, Vec3, With, Without};
 use bevy::prelude::IntoSystemSetConfigs;
 use derive_more::{Add, Mul};
 use lightyear::prelude::*;
-use lightyear::prelude::client::{Client, Predicted};
+use lightyear::prelude::client::{Client, Confirmed, Predicted};
 use serde::{Deserialize, Serialize};
 
 use crate::lightyear_demo::components::*;
@@ -87,6 +87,8 @@ pub enum Components {
     Projectile(Projectile),
     #[sync(full)]
     SimpleVelocity(SimpleVelocity),
+    #[sync(once)]
+    SpawnHash(SpawnHash),
 }
 
 
@@ -133,6 +135,7 @@ pub fn shared_config() -> SharedConfig {
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub enum FixedUpdateMainSet {
     Pull,
+    AfterPull,
     Update,
     Push,
 }
@@ -158,11 +161,12 @@ impl Plugin for SharedPlugin {
             .in_set(FixedUpdateSet::Main)
         );
 
+        // todo better merge these two systems or run the commands in between them somehow
         app.add_systems(FixedUpdate, (create_replicated_transforms,pull_replicated_positions).chain()
             .in_set(FixedUpdateMainSet::Pull));
 
         app.add_systems(FixedUpdate, handle_pawn_movement.in_set(FixedUpdateMainSet::Update));
-        app.add_systems(FixedUpdate, handle_pawn_shooting.in_set(FixedUpdateMainSet::Update)); //.after SimulatedTag
+        //app.add_systems(FixedUpdate, handle_pawn_shooting.in_set(FixedUpdateMainSet::Update)); //.after SimulatedTag
         //app.add_systems(Update, handle_pawn_shooting);
         app.add_systems(FixedUpdate, handle_projectile.in_set(FixedUpdateMainSet::Update));
 
@@ -182,11 +186,11 @@ impl Plugin for SharedPlugin {
 #[derive(Component)]
 pub struct Simulated;
 pub fn handle_simulated_tag_client(
-    to_tag: Query<(Entity, &Predicted),Without<Simulated>>,
-    to_un_tag: Query<(Entity, &Simulated),Without<Predicted>>,
+    to_tag: Query<Entity,(With<Predicted>,Without<Simulated>, Without<SpawnHash>)>,
+    to_un_tag: Query<(Entity, &Simulated),(Without<Predicted>, Without<SpawnHash>)>,
     mut commands: Commands,
 ){
-    to_tag.for_each(|(entity, _)|{
+    to_tag.for_each(|entity|{
         commands.entity(entity).insert(Simulated);
     });
 
@@ -194,6 +198,20 @@ pub fn handle_simulated_tag_client(
         commands.entity(entity).remove::<Simulated>();
     });
 }
+pub fn handle_simulated_tag_for_predicted_spawns_client(
+    to_tag: Query<Entity,   (Without<Simulated>,With<SpawnHash>,Without<Predicted>,Without<Confirmed>, Without<Replicate>)>,
+    to_un_tag: Query<Entity,(With<SpawnHash>,With<Predicted>,   With<Simulated>,    Without<Replicate>)>,
+    mut commands: Commands,
+) {
+    to_tag.for_each(|entity| {
+        commands.entity(entity).insert(Simulated);
+    });
+
+    //to_un_tag.for_each(|entity| {
+    //    commands.entity(entity).remove::<Simulated>();
+    //});
+}
+
 pub fn handle_simulated_tag_server(
     to_tag: Query<(Entity, &Replicate),Without<Simulated>>,
     to_un_tag: Query<(Entity, &Simulated),Without<Replicate>>,
