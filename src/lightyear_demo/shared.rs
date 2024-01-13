@@ -148,7 +148,7 @@ impl Plugin for SharedPlugin {
     MainFlush,
     */
     fn build(&self, app: &mut App) {
-        app.insert_resource(GlobalTime{simulation_tick:Tick(0)});
+        app.insert_resource(GlobalTime{simulation_tick:Tick(0), is_server: false});
 
         app.configure_sets(
             FixedUpdate,
@@ -198,7 +198,7 @@ pub fn handle_simulated_tag_client(
     });
 }
 pub fn handle_simulated_tag_for_predicted_spawns_client(
-    to_tag: Query<Entity,   (Without<Simulated>,With<SpawnHash>,Without<Predicted>,Without<Confirmed>, Without<Replicate>)>,
+    to_tag: Query<Entity,   (Without<Simulated>,With<SpawnHash>,Without<Predicted>,Without<Confirmed>)>,
     to_un_tag: Query<Entity,(With<SpawnHash>,With<Predicted>,   With<Simulated>,    Without<Replicate>)>,
     mut commands: Commands,
 ) {
@@ -301,4 +301,5 @@ pub(crate) fn movement(
 #[derive(Resource, Default)]
 pub struct GlobalTime{
     pub simulation_tick: Tick,
+    pub is_server: bool,
 }

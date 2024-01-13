@@ -217,6 +217,7 @@ pub fn update_time_server(
 ){
     let tick = server.tick();
     global_time.simulation_tick = tick;
+    global_time.is_server = true;
 
 }
 
@@ -281,7 +282,7 @@ pub fn handle_pawn_shooting(
                 let entity_id = commands.spawn_empty()
                 .insert(PlayerId::new(owner_client_id))
                 .insert(Projectile{
-                    start_tick
+                    start_tick : Tick(0)
                 })
                 .insert(SimpleVelocity{
                     value: velocity,
@@ -295,17 +296,27 @@ pub fn handle_pawn_shooting(
                     radius: 0.25,
                     color: Color::RED,
                 })
-                //.insert(Simulated)
-                .insert(Replicate{
-                    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
-                    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
-                    ..Default::default()
-                })
                 .insert(SpawnHash{
-                    hash: 0,
+                    hash: start_tick.0 as u32,
                     spawned_tick: start_tick,
                 }).id()
                 ;
+
+            if(true ||global_time.is_server){
+                //Replicate{
+                //    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
+                //    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
+                //    ..Default::default()
+                //}
+
+                // insert that
+                commands.entity(entity_id).insert(Replicate{
+                    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
+                    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
+                    ..Default::default()
+                });
+            }
+
 
 
             //commands.entity(entity_id).insert(lightyear::_reexport::ShouldBePredicted{

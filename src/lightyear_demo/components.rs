@@ -8,6 +8,7 @@ use bevy_inspector_egui::InspectorOptions;
 use derive_more::{Add, Mul};
 use lightyear::_reexport::{ShouldBePredicted};
 use lightyear::client::components::Confirmed;
+use lightyear::client::prediction::{Rollback, RollbackState};
 use lightyear::prelude::*;
 use lightyear::prelude::client::{Interpolated, LerpFn, Predicted};
 use serde::{Deserialize, Serialize};
@@ -192,10 +193,15 @@ pub fn destroy_old_predicted_spawns(
 pub fn destroy_all_predicted_spawns(
     mut commands: Commands,
     predicted_local_spawn : Query<(Entity, &SpawnHash), (Without<Confirmed>,Without<Predicted>)>,
-    global_time: Res<GlobalTime>,
+    rollback: Res<Rollback>
 ){
-    for (entity, spawn_hash) in predicted_local_spawn.iter() {
-        commands.entity(entity).despawn_recursive();
+    match rollback.state {
+        RollbackState::Default => {}
+        RollbackState::ShouldRollback { .. } => {
+            for (entity, spawn_hash) in predicted_local_spawn.iter() {
+                commands.entity(entity).despawn_recursive();
+            }
+        }
     }
 }
 
