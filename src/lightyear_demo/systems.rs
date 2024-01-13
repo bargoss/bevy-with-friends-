@@ -3,7 +3,7 @@ use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy_vector_shapes::painter::ShapePainter;
 use lightyear::client::components::ComponentSyncMode;
-use lightyear::prelude::client::{Client, Predicted, SyncComponent};
+use lightyear::prelude::client::{Client, Confirmed, Predicted, SyncComponent};
 use lightyear::prelude::{ClientId, NetworkTarget, Replicate};
 use lightyear::prelude::server::Server;
 use lightyear::shared::events::InputEvent;
@@ -16,17 +16,32 @@ use super::components::*;
 use super::server::Global;
 
 pub fn draw_circle_view(
-    circle_views: Query<(&CircleView, &Transform)>,
+    circle_views: Query<(Entity,&CircleView, &ReplicatedPosition)>,
+    confirmed: Query<&Confirmed>,
     mut painter: ShapePainter
 )
 {
-    circle_views.for_each(|(circle_view, transform)|{
+
+
+    circle_views.for_each(|(entity,circle_view, replicated_position)|{
+        let mut offset = Vec3::new(0.0, 0.0, 0.0);
+        if confirmed.get(entity).is_ok() {
+            offset = Vec3::new(0.0, -1.0, 0.0);
+        }
+
         utils::draw_o(
-            Vec3::new(transform.translation.x, transform.translation.y, 0.0),
+            replicated_position.0 + offset,
             circle_view.radius,
             circle_view.color,
             &mut painter
         );
+
+        //utils::draw_o(
+        //    Vec3::new(transform.translation.x, transform.translation.y, 0.0) + offset,
+        //    circle_view.radius,
+        //    circle_view.color,
+        //    &mut painter
+        //);
     });
 }
 
@@ -143,22 +158,24 @@ pub fn push_replicated_positions(
 }
 
 pub fn handle_pawn_movement(
-    mut pawn_query: Query<(&Pawn, &PawnInput, &mut Transform), With<Simulated>>,
+    mut pawn_query: Query<(&Pawn, &PawnInput, &mut ReplicatedPosition), Or<(With<Predicted>, With<Replicate>)>>,
     global_time: Res<GlobalTime>
 ){
 
     let current_tick = global_time.simulation_tick;
     let float_from_tick = current_tick.0 as f32 * 0.05;
     let sin = float_from_tick.sin();
-    let speed = 0.05 * sin;
+    let mut speed = 0.05 * sin;
+    if sin > 0.0 {
+        speed = 0.25;
+    }
+    else{
+        speed = -0.25;
+    }
 
-
-    pawn_query.for_each_mut(|(_, pawn_input, mut transform)|{
-        let movement_direction = pawn_input.movement_direction;
-        transform.translation.x += speed;
-        transform.translation.y += movement_direction.y * speed;
+    pawn_query.for_each_mut(|(_, pawn_input, mut replicated_position)|{
+        replicated_position.x += speed;
     });
-
 }
 
 //pub fn update_time_client(

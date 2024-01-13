@@ -162,8 +162,8 @@ impl Plugin for SharedPlugin {
         );
 
         // todo better merge these two systems or run the commands in between them somehow
-        app.add_systems(FixedUpdate, (create_replicated_transforms,pull_replicated_positions).chain()
-            .in_set(FixedUpdateMainSet::Pull));
+        //app.add_systems(FixedUpdate, (create_replicated_transforms,pull_replicated_positions).chain()
+        //    .in_set(FixedUpdateMainSet::Pull));
 
         app.add_systems(FixedUpdate, handle_pawn_movement.in_set(FixedUpdateMainSet::Update));
         //app.add_systems(FixedUpdate, handle_pawn_shooting.in_set(FixedUpdateMainSet::Update)); //.after SimulatedTag
@@ -172,7 +172,7 @@ impl Plugin for SharedPlugin {
 
 
 
-        app.add_systems(FixedUpdate, push_replicated_positions.in_set(FixedUpdateMainSet::Push));
+        //app.add_systems(FixedUpdate, push_replicated_positions.in_set(FixedUpdateMainSet::Push));
     }
 }
 
