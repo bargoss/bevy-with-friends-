@@ -86,11 +86,11 @@ impl Plugin for DemoClientPlugin {
                 FixedUpdate,
                 (
                     handle_simulated_tag_client,
-                    //handle_simulated_tag_for_predicted_spawns_client,
+                    handle_simulated_tag_for_predicted_spawns_client,
                     update_time_client,
 
                     //destroy_old_predicted_spawns,
-                    //destroy_reconciled_predicted_spawns,
+                    destroy_reconciled_predicted_spawns,
                 ).chain() .in_set(FixedUpdateMainSet::Pull)
             )
             //.add_systems(
@@ -102,12 +102,12 @@ impl Plugin for DemoClientPlugin {
 
 
 
-            //.add_systems(
-            //    FixedUpdate,
-            //    (
-            //        //destroy_illegal_replicated_components_on_client,
-            //    ).in_set(FixedUpdateMainSet::Push)
-            //)
+            .add_systems(
+                FixedUpdate,
+                (
+                    destroy_illegal_replicated_components_on_client,
+                ).in_set(FixedUpdateMainSet::Push)
+            )
 
             .add_systems(FixedUpdate, handle_pawn_input_client
                 .in_set(FixedUpdateMainSet::Pull))
