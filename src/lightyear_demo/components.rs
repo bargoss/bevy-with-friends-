@@ -201,14 +201,15 @@ pub fn destroy_all_predicted_spawns(
 
 pub fn destroy_reconciled_predicted_spawns(
     mut commands: Commands,
-    local : Query<(Entity, &SpawnHash), (Without<Confirmed>, Without<Predicted>)>,
-    reconciled : Query<(Entity, &SpawnHash), With<Predicted>>,
+    local : Query<(Entity, &SpawnHash), With<Simulated>>,
+    reconciled : Query<(Entity, &SpawnHash), With<Confirmed>>,
 ){
     let reconciled : HashSet<SpawnHash> = reconciled.iter().map(|(_, hash)| hash.clone()).collect();
 
     for (entity, spawn_hash) in local.iter() {
         if reconciled.contains(spawn_hash){
             commands.entity(entity).despawn_recursive();
+            log::info!("--------destroying reconciled predicted spawn");
         }
     }
 }

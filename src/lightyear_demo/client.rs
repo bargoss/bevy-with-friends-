@@ -80,7 +80,9 @@ impl Plugin for DemoClientPlugin {
                 PredictionSet::EntityDespawn,*/
 
         //destroy_all_predicted_spawns,
-            //.add_systems(FixedUpdate, (destroy_all_predicted_spawns,apply_deferred).chain().in_set(PredictionSet::Rollback))
+            .add_systems(FixedUpdate, (destroy_all_predicted_spawns,apply_deferred).chain().in_set(PredictionSet::Rollback))
+        //update_time_client,
+
 
             .add_systems(
                 FixedUpdate,
@@ -106,6 +108,7 @@ impl Plugin for DemoClientPlugin {
                 FixedUpdate,
                 (
                     destroy_illegal_replicated_components_on_client,
+                    increment_time_client
                 ).in_set(FixedUpdateMainSet::Push)
             )
 

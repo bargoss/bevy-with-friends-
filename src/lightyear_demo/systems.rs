@@ -3,6 +3,7 @@ use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy_vector_shapes::painter::ShapePainter;
 use lightyear::client::components::ComponentSyncMode;
+use lightyear::client::prediction::{Rollback, RollbackState};
 use lightyear::prelude::client::{Confirmed, Predicted, SyncComponent};
 use lightyear::prelude::{ClientId, NetworkTarget, TickManaged};
 use lightyear::shared::events::InputEvent;
@@ -188,9 +189,26 @@ pub fn handle_pawn_movement(
 pub fn update_time_client(
     client: Res<Client>,
     mut global_time: ResMut<GlobalTime>,
+    rollback: Res<Rollback>
 ){
-    let tick = client.tick();
-    global_time.simulation_tick = tick;
+
+    match rollback.state {
+        RollbackState::Default => {
+            //log::info!("no rollback?!: {}", global_time.simulation_tick.0);
+        }
+        RollbackState::ShouldRollback { current_tick } => {
+            global_time.simulation_tick = current_tick;
+            //log::info!("ROLLBACK: {}", current_tick.0);
+        }
+    }
+
+    //let tick = client.tick();
+    //global_time.simulation_tick = tick;
+}
+pub fn increment_time_client(
+    mut global_time: ResMut<GlobalTime>
+){
+    global_time.simulation_tick.0 += 1;
 }
 
 pub fn update_time_server(
@@ -203,11 +221,12 @@ pub fn update_time_server(
 }
 
 pub fn handle_projectile(
-    mut projectile_query: Query<(&mut Projectile, &SimpleVelocity, &mut Transform),With<Simulated>>,
+    mut projectile_query: Query<(&mut Projectile, &SimpleVelocity, &mut Transform, &mut ReplicatedPosition),With<Simulated>>,
     mut commands: Commands
 ){
-    projectile_query.for_each_mut(|(mut projectile, velocity, mut transform)|{
-        transform.translation += velocity.value * 0.15;
+    projectile_query.for_each_mut(|(mut projectile, velocity, mut transform, mut replicated_position)|{
+        //transform.translation += velocity.value * 0.15;
+        replicated_position.0 += velocity.value * 0.15;
 
         //projectile.life_time -= 1;
         //if projectile.life_time <= 0 {
@@ -219,7 +238,7 @@ pub fn handle_projectile(
 
 
 pub fn handle_pawn_shooting(
-    mut pawn_query: Query<(Entity,&mut Pawn, &PawnInput, &Transform, &PlayerId), With<Simulated>>,
+    mut pawn_query: Query<(Entity,&mut Pawn, &PawnInput, &ReplicatedPosition, &PlayerId), With<Simulated>>,
     global_time: Res<GlobalTime>,
     mut commands: Commands,
     mut counter : Local<u16>,
@@ -232,10 +251,9 @@ pub fn handle_pawn_shooting(
         let cooldown_finished = ticks_since_last_shot > cooldown;
         if pawn_input.attack && cooldown_finished { // global_time.simulation_tick.0 % 50 == 49
             log::info!("SHOOTING");
-            //pawn.last_attack_time = current_tick;
-            pawn.last_attack_time = Tick(*counter);
-            // increment counter
-            *counter += 1;
+            pawn.last_attack_time = current_tick;
+            //pawn.last_attack_time = Tick(*counter);
+            //*counter += 1;
 
             //let shoot_dir = pawn_input.movement_direction;
             let shoot_dir = Vec3::new(0.0, -1.0, 0.0);
@@ -255,20 +273,20 @@ pub fn handle_pawn_shooting(
 
             let owner_client_id = *player_id.clone();
             let start_tick = global_time.simulation_tick;
-            let position = Vec3::new(transform.translation.x, transform.translation.y, transform.translation.z);
+            let position = transform.0;
             let velocity = shoot_dir;
 
 
-            /*
-                        let entity_id = commands.spawn_empty()
-                //.insert(PlayerId::new(owner_client_id))
-                //.insert(Projectile{
-                //    start_tick
-                //})
-                //.insert(SimpleVelocity{
-                //    value: velocity,
-                //})
-                //.insert(ReplicatedPosition(position))
+
+                let entity_id = commands.spawn_empty()
+                .insert(PlayerId::new(owner_client_id))
+                .insert(Projectile{
+                    start_tick
+                })
+                .insert(SimpleVelocity{
+                    value: velocity,
+                })
+                .insert(ReplicatedPosition(position))
                 .insert(TransformBundle{
                     local: Transform::from_translation(position),
                     ..Default::default()
@@ -278,17 +296,17 @@ pub fn handle_pawn_shooting(
                     color: Color::RED,
                 })
                 //.insert(Simulated)
-                //.insert(Replicate{
-                //    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
-                //    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
-                //    ..Default::default()
-                //})
-                //.insert(SpawnHash{
-                //    hash: 0,
-                //    spawned_tick: start_tick,
-                //}).id()
+                .insert(Replicate{
+                    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
+                    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
+                    ..Default::default()
+                })
+                .insert(SpawnHash{
+                    hash: 0,
+                    spawned_tick: start_tick,
+                }).id()
                 ;
-*/
+
 
             //commands.entity(entity_id).insert(lightyear::_reexport::ShouldBePredicted{
             //    client_entity: Some(entity_id),
