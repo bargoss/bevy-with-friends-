@@ -38,7 +38,7 @@ impl Plugin for DemoServerPlugin {
         //};
         let transport = TransportConfig::UdpSocket(server_addr);
         let io =
-            Io::from_config(&IoConfig::from_transport(transport).with_conditioner(link_conditioner));
+            Io::from_config(IoConfig::from_transport(transport).with_conditioner(link_conditioner));
         let config = ServerConfig {
             shared: shared_config().clone(),
             netcode: netcode_config,

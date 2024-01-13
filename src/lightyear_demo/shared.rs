@@ -6,7 +6,7 @@ use bevy::prelude::{App, Bundle, Color, Commands, Component, Deref, DerefMut, En
 use bevy::prelude::IntoSystemSetConfigs;
 use derive_more::{Add, Mul};
 use lightyear::prelude::*;
-use lightyear::prelude::client::{Client, Confirmed, Predicted};
+use lightyear::prelude::client::{Confirmed, Predicted};
 use serde::{Deserialize, Serialize};
 
 use crate::lightyear_demo::components::*;
@@ -33,7 +33,7 @@ pub enum Inputs {
     //// NOTE: we NEED to provide a None input so that the server can distinguish between lost input packets and 'None' inputs
     //None,
 }
-impl UserInput for Inputs {}
+impl UserAction for Inputs {}
 
 
 #[derive(Message, Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -227,7 +227,7 @@ pub fn handle_simulated_tag_server(
 }
 
 
-pub(crate) fn buffer_input(mut client: ResMut<Client<MyProtocol>>, keypress: Res<Input<KeyCode>>) {
+pub(crate) fn buffer_input(mut client: ResMut<Client>, keypress: Res<Input<KeyCode>>) {
     let mut input = PawnInputData {
         up: false,
         down: false,

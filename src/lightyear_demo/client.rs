@@ -51,7 +51,7 @@ impl Plugin for DemoClientPlugin {
         //};
         let transport = TransportConfig::UdpSocket(client_addr);
         let io =
-            Io::from_config(&IoConfig::from_transport(transport).with_conditioner(link_conditioner));
+            Io::from_config(IoConfig::from_transport(transport).with_conditioner(link_conditioner));
         let config = ClientConfig {
             shared: shared_config().clone(),
             input: InputConfig::default(),
@@ -124,7 +124,7 @@ impl Plugin for DemoClientPlugin {
 
 fn init(
     mut commands: Commands,
-    mut client: ResMut<Client<MyProtocol>>,
+    mut client: ResMut<Client>,
 ) {
     //commands.spawn(Camera3dBundle::default());
     commands.spawn(Camera3dBundle {

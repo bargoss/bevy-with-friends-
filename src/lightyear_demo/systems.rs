@@ -3,13 +3,12 @@ use bevy::math::Vec3;
 use bevy::prelude::*;
 use bevy_vector_shapes::painter::ShapePainter;
 use lightyear::client::components::ComponentSyncMode;
-use lightyear::prelude::client::{Client, Confirmed, Predicted, SyncComponent};
-use lightyear::prelude::{ClientId, NetworkTarget, Replicate};
-use lightyear::prelude::server::Server;
+use lightyear::prelude::client::{Confirmed, Predicted, SyncComponent};
+use lightyear::prelude::{ClientId, NetworkTarget, TickManaged};
 use lightyear::shared::events::InputEvent;
 
 use crate::defender_game::utils;
-use crate::lightyear_demo::shared::{GlobalTime, Inputs, MyProtocol, PlayerId, PlayerPosition, ReplicatedPosition, Simulated};
+use crate::lightyear_demo::shared::{Client, GlobalTime, Inputs, MyProtocol, PlayerId, PlayerPosition, Replicate, ReplicatedPosition, Server, Simulated};
 use crate::lightyear_demo::shared::ComponentsKind::ShouldBePredicted;
 
 use super::components::*;
@@ -187,7 +186,7 @@ pub fn handle_pawn_movement(
 //
 //}
 pub fn update_time_client(
-    client: Res<Client<MyProtocol>>,
+    client: Res<Client>,
     mut global_time: ResMut<GlobalTime>,
 ){
     let tick = client.tick();
@@ -195,7 +194,7 @@ pub fn update_time_client(
 }
 
 pub fn update_time_server(
-    server: Res<Server<MyProtocol>>,
+    server: Res<Server>,
     mut global_time: ResMut<GlobalTime>,
 ){
     let tick = server.tick();

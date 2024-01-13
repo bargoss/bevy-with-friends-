@@ -1,38 +1,44 @@
 use std::any::Any;
 use std::collections::{HashMap, HashSet};
+use std::ops::{Add, AddAssign, Mul};
 use bevy::asset::AssetContainer;
 use bevy::prelude::*;
 use bevy::reflect::{ReflectMut, ReflectOwned, ReflectRef, TypeInfo};
 use bevy_inspector_egui::InspectorOptions;
 use derive_more::{Add, Mul};
-use lightyear::_reexport::{InterpolatedComponent, LinearInterpolation, ShouldBePredicted};
+use lightyear::_reexport::{ShouldBePredicted};
 use lightyear::client::components::Confirmed;
-use lightyear::client::interpolation::InterpFn;
 use lightyear::prelude::*;
-use lightyear::prelude::client::{Interpolated, Predicted};
+use lightyear::prelude::client::{Interpolated, LerpFn, Predicted};
 use serde::{Deserialize, Serialize};
 
 use crate::lightyear_demo::shared::*;
 
-//#[derive(Component, Default, Clone)]
 #[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Deref, DerefMut)]
 pub struct Pawn{
     pub last_attack_time : Tick,
 }
 
-// Assuming `InterpFn` needs to be implemented for Pawn
-impl InterpFn<Pawn> for LinearInterpolation {
-    fn lerp(start: Pawn, other: Pawn, t: f32) -> Pawn {
-        other
+impl Add for Pawn{
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        Self{
+            last_attack_time: rhs.last_attack_time,
+        }
     }
 }
 
-//impl InterpolatedComponent<Pawn> for Pawn{
-//    type Fn = LinearInterpolation;
-//    fn lerp(start: Pawn, other: Pawn, t: f32) -> Pawn {
-//        other
-//    }
-//}
+impl Mul<f32> for Pawn{
+    type Output = Self;
+    fn mul(self, rhs: f32) -> Self::Output {
+        Self{
+            last_attack_time: self.last_attack_time,
+        }
+    }
+}
+
+
+
 
 #[derive(Component)]
 struct Position {
