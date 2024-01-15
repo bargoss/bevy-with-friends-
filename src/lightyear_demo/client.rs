@@ -79,15 +79,19 @@ impl Plugin for DemoClientPlugin {
                 FixedUpdateSet::MainFlush,
                 PredictionSet::EntityDespawn,*/
 
-            .add_systems(FixedUpdate, (destroy_all_predicted_spawns,apply_deferred).chain().in_set(PredictionSet::Rollback))
+            //.add_systems(FixedUpdate, (destroy_all_predicted_spawns,apply_deferred).chain().in_set(PredictionSet::Rollback))
 
 
             .add_systems(
                 FixedUpdate,
                 (
+                    increment_time_client,
+                    destroy_all_predicted_spawns,
+                    apply_deferred,
                     handle_simulated_tag_client,
                     handle_simulated_tag_for_predicted_spawns_client,
                     update_time_client,
+                    handle_pawn_input_client,
 
                     //destroy_old_predicted_spawns,
                     //-destroy_reconciled_predicted_spawns,
@@ -103,12 +107,12 @@ impl Plugin for DemoClientPlugin {
                     apply_deferred,
                     destroy_all_predicted_spawns,
                     apply_deferred,
-                    increment_time_client
+                    //increment_time_client
                 ).chain().in_set(FixedUpdateMainSet::Push)
             )
 
-            .add_systems(FixedUpdate, handle_pawn_input_client
-                .in_set(FixedUpdateMainSet::Pull))
+            //.add_systems(FixedUpdate, handle_pawn_input_client
+            //    .in_set(FixedUpdateMainSet::Pull))
 
             .add_systems(Update, see_spawn_hash)
         ;

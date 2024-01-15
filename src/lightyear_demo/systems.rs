@@ -221,15 +221,16 @@ pub fn update_time_server(
 
 }
 
+// this didnt match on the client and thats why I had prediction problems I think
 pub fn handle_projectile(
-    mut projectile_query: Query<(&mut Projectile, &SimpleVelocity, &mut Transform, &mut ReplicatedPosition),With<Simulated>>,
+    mut projectile_query: Query<(&mut Projectile, &SimpleVelocity, &mut ReplicatedPosition),With<Simulated>>,
     mut commands: Commands
 ){
-    projectile_query.for_each_mut(|(mut projectile, velocity, mut transform, mut replicated_position)|{
+    projectile_query.for_each_mut(|(mut projectile, velocity, mut replicated_position)|{
         //transform.translation += velocity.value * 0.15;
         //replicated_position.0 += velocity.value * 0.15;
 
-        //replicated_position.0 += 0.15 * Vec3::new(0.0, -1.0, 0.0);
+        replicated_position.0 += 0.15 * Vec3::new(0.0, -1.0, 0.0);
 
         //projectile.life_time -= 1;
         //if projectile.life_time <= 0 {
@@ -253,6 +254,7 @@ pub fn handle_pawn_shooting(
         let cooldown = 50;
         let cooldown_finished = ticks_since_last_shot > cooldown;
         if pawn_input.attack && cooldown_finished { // global_time.simulation_tick.0 % 50 == 49
+
             log::info!("SHOOTING");
             pawn.last_attack_time = current_tick;
             //pawn.last_attack_time = Tick(*counter);

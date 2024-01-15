@@ -9,7 +9,7 @@ use lightyear::prelude::server::*;
 
 use crate::lightyear_demo::{KEY, PROTOCOL_ID, SERVER_PORT};
 use crate::lightyear_demo::components::PawnBundle;
-use crate::lightyear_demo::systems::{handle_pawn_input_server, handle_pawn_shooting, update_time_server};
+use crate::lightyear_demo::systems::{handle_pawn_input_server, update_time_server};
 
 use super::shared::*;
 
