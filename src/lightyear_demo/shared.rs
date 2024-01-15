@@ -185,17 +185,17 @@ impl Plugin for SharedPlugin {
 #[derive(Component)]
 pub struct Simulated;
 pub fn handle_simulated_tag_client(
-    to_tag: Query<Entity,(With<Predicted>,Without<Simulated>, Without<SpawnHash>)>,
-    to_un_tag: Query<(Entity, &Simulated),(Without<Predicted>, Without<SpawnHash>)>,
+    to_tag: Query<Entity,(With<Predicted>,Without<Simulated>)>,
+    //to_un_tag: Query<(Entity, &Simulated),(Without<Predicted>, Without<SpawnHash>)>,
     mut commands: Commands,
 ){
     to_tag.for_each(|entity|{
         commands.entity(entity).insert(Simulated);
     });
 
-    to_un_tag.for_each(|(entity, _)|{
-        commands.entity(entity).remove::<Simulated>();
-    });
+    //to_un_tag.for_each(|(entity, _)|{
+    //    commands.entity(entity).remove::<Simulated>();
+    //});
 }
 pub fn handle_simulated_tag_for_predicted_spawns_client(
     to_tag: Query<Entity,   (Without<Simulated>,With<SpawnHash>,Without<Predicted>,Without<Confirmed>)>,

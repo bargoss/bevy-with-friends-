@@ -227,7 +227,9 @@ pub fn handle_projectile(
 ){
     projectile_query.for_each_mut(|(mut projectile, velocity, mut transform, mut replicated_position)|{
         //transform.translation += velocity.value * 0.15;
-        replicated_position.0 += velocity.value * 0.15;
+        //replicated_position.0 += velocity.value * 0.15;
+
+        //replicated_position.0 += 0.15 * Vec3::new(0.0, -1.0, 0.0);
 
         //projectile.life_time -= 1;
         //if projectile.life_time <= 0 {
@@ -282,7 +284,8 @@ pub fn handle_pawn_shooting(
                 let entity_id = commands.spawn_empty()
                 .insert(PlayerId::new(owner_client_id))
                 .insert(Projectile{
-                    start_tick : Tick(0)
+                    //start_tick : Tick(0)
+                    start_tick : global_time.simulation_tick
                 })
                 .insert(SimpleVelocity{
                     value: velocity,
