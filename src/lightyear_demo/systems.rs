@@ -249,7 +249,6 @@ pub fn handle_pawn_shooting(
     mut pawn_query: Query<(Entity,&mut Pawn, &PawnInput, &ReplicatedPosition, &PlayerId), With<Simulated>>,
     global_time: Res<GlobalTime>,
     mut commands: Commands,
-    mut counter : Local<u16>,
 ){
     pawn_query.for_each_mut(|(entity, mut pawn, pawn_input, mut transform, player_id)|{
         let last_shot_tick = pawn.last_attack_time;
@@ -257,27 +256,12 @@ pub fn handle_pawn_shooting(
         let ticks_since_last_shot = current_tick.0 - last_shot_tick.0;
         let cooldown = 50;
         let cooldown_finished = ticks_since_last_shot > cooldown;
-        if pawn_input.attack && cooldown_finished { // global_time.simulation_tick.0 % 50 == 49
+        if pawn_input.attack && cooldown_finished {
 
             log::info!("SHOOTING");
             pawn.last_attack_time = current_tick;
-            //pawn.last_attack_time = Tick(*counter);
-            //*counter += 1;
 
-            //let shoot_dir = pawn_input.movement_direction;
             let shoot_dir = Vec3::new(0.0, -1.0, 0.0);
-
-            //let projectile = commands.spawn(ProjectileBundle::new(
-            //    *player_id.clone(),
-            //    global_time.simulation_tick,
-            //    Vec3::new(transform.translation.x, transform.translation.y, transform.translation.z),
-            //    shoot_dir,
-            //));
-            //let entity_id = projectile.id();
-
-
-            // remove Replicate component
-            //commands.entity(entity_id).remove::<Replicate>();
 
 
             let owner_client_id = *player_id.clone();
@@ -287,87 +271,33 @@ pub fn handle_pawn_shooting(
 
 
 
-                let entity_id = commands.spawn_empty()
-                .insert(PlayerId::new(owner_client_id))
-                .insert(Projectile{
-                    //start_tick : Tick(0)
-                    start_tick : global_time.simulation_tick
-                })
-                .insert(SimpleVelocity{
-                    value: velocity,
-                })
-                .insert(ReplicatedPosition(position))
-                .insert(TransformBundle{
-                    local: Transform::from_translation(position),
-                    ..Default::default()
-                })
-                .insert(CircleView{
-                    radius: 0.25,
-                    color: Color::RED,
-                })
-                .insert(SpawnHash{
-                    hash: start_tick.0 as u32,
-                    spawned_tick: start_tick,
-                }).id()
-                ;
-
-            if(true ||global_time.is_server){
-                //Replicate{
-                //    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
-                //    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
-                //    ..Default::default()
-                //}
-
-                // insert that
-                commands.entity(entity_id).insert(Replicate{
-                    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
-                    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
-                    ..Default::default()
-                });
-            }
-
-
-
-            //commands.entity(entity_id).insert(lightyear::_reexport::ShouldBePredicted{
-            //    client_entity: Some(entity_id),
-            //});
-
-            /*commands.spawn({
-
-                PlayerId::new(owner_client_id);
-                Projectile{
-                    start_tick
-                };
-                SimpleVelocity{
-                    value: velocity,
-                };
-                ReplicatedPosition(position);
-                TransformBundle{
-                    local: Transform::from_translation(position),
-                    ..Default::default()
-                };
-                CircleView{
-                    radius: 0.25,
-                    color: Color::RED,
-                };
-                //Replicate{
-                //    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
-                //    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
-                //    ..Default::default()
-                //};
-                SpawnHash{
-                    hash: 0,
-                    spawned_tick: start_tick,
-                }
-                //should_be_predicted: ShouldBePredicted{client_entity: None},
-            });*/
-
-
-            //projectile.insert(lightyear::_reexport::ShouldBePredicted{
-            //    client_entity :  Some(entity_id),
-            //});
-
-
+            commands.spawn_empty()
+            .insert(PlayerId::new(owner_client_id))
+            .insert(Projectile{
+                //start_tick : Tick(0)
+                start_tick : global_time.simulation_tick
+            })
+            .insert(SimpleVelocity{
+                value: velocity,
+            })
+            .insert(ReplicatedPosition(position))
+            .insert(TransformBundle{
+                local: Transform::from_translation(position),
+                ..Default::default()
+            })
+            .insert(CircleView{
+                radius: 0.25,
+                color: Color::RED,
+            })
+            .insert(SpawnHash{
+                hash: start_tick.0 as u32,
+                spawned_tick: start_tick,
+            })
+            .insert(Replicate{
+                prediction_target: NetworkTarget::Only(vec![owner_client_id]),
+                interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
+                ..Default::default()
+            });
         }
     });
 }
