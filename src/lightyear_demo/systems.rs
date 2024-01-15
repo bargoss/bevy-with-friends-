@@ -162,19 +162,23 @@ pub fn handle_pawn_movement(
     global_time: Res<GlobalTime>
 ){
 
-    let current_tick = global_time.simulation_tick;
-    let float_from_tick = current_tick.0 as f32 * 0.05;
-    let sin = float_from_tick.sin();
-    let mut speed = 0.05 * sin;
-    if sin > 0.0 {
-        speed = 0.25;
-    }
-    else{
-        speed = -0.25;
-    }
+    //let current_tick = global_time.simulation_tick;
+    //let float_from_tick = current_tick.0 as f32 * 0.05;
+    //let sin = float_from_tick.sin();
+    //let mut speed = 0.05 * sin;
+    //if sin > 0.0 {
+    //    speed = 0.25;
+    //}
+    //else{
+    //    speed = -0.25;
+    //}
+    //pawn_query.for_each_mut(|(_, pawn_input, mut replicated_position)|{
+    //    replicated_position.x += speed;
+    //});
 
+    let speed = 0.25;
     pawn_query.for_each_mut(|(_, pawn_input, mut replicated_position)|{
-        replicated_position.x += speed;
+        replicated_position.0 += pawn_input.movement_direction * speed;
     });
 }
 

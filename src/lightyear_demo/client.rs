@@ -85,12 +85,13 @@ impl Plugin for DemoClientPlugin {
             .add_systems(
                 FixedUpdate,
                 (
+                    update_time_client,
                     increment_time_client,
                     destroy_all_predicted_spawns,
                     apply_deferred,
                     handle_simulated_tag_client,
                     handle_simulated_tag_for_predicted_spawns_client,
-                    update_time_client,
+
                     handle_pawn_input_client,
 
                     //destroy_old_predicted_spawns,
