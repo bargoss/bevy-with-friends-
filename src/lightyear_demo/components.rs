@@ -190,7 +190,7 @@ pub fn destroy_old_predicted_spawns(
         }
     }
 }
-pub fn destroy_all_predicted_spawns(
+pub fn destroy_all_predicted_spawns_on_rollback(
     mut commands: Commands,
     predicted_local_spawn : Query<(Entity, &SpawnHash), (Without<Confirmed>,Without<Predicted>)>,
     rollback: Res<Rollback>

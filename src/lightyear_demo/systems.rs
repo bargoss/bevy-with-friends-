@@ -190,7 +190,7 @@ pub fn handle_pawn_movement(
 //    let current_tick = tick_manager.current_tick();
 //
 //}
-pub fn update_time_client(
+pub fn rollback_time_client(
     client: Res<Client>,
     mut global_time: ResMut<GlobalTime>,
     rollback: Res<Rollback>

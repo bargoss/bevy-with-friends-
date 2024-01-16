@@ -8,7 +8,7 @@ use lightyear::prelude::*;
 use lightyear::prelude::client::*;
 
 use crate::lightyear_demo::{CLIENT_PORT, KEY, PROTOCOL_ID, SERVER_PORT};
-use crate::lightyear_demo::components::{destroy_old_predicted_spawns, destroy_reconciled_predicted_spawns, destroy_all_predicted_spawns, destroy_illegal_replicated_components_on_client, see_spawn_hash, SeeSpawnHash};
+use crate::lightyear_demo::components::{destroy_old_predicted_spawns, destroy_reconciled_predicted_spawns, destroy_all_predicted_spawns_on_rollback, destroy_illegal_replicated_components_on_client, see_spawn_hash, SeeSpawnHash};
 use crate::lightyear_demo::systems::*;
 
 use super::shared::*;
@@ -72,48 +72,28 @@ impl Plugin for DemoClientPlugin {
             .add_plugins(ClientPlugin::new(plugin_config))
             .add_systems(Startup, init)
 
-            /*
-            FixedUpdate,
-            (
-                FixedUpdateSet::Main,
-                FixedUpdateSet::MainFlush,
-                PredictionSet::EntityDespawn,*/
-
-            //.add_systems(FixedUpdate, (destroy_all_predicted_spawns,apply_deferred).chain().in_set(PredictionSet::Rollback))
-
-
             .add_systems(
                 FixedUpdate,
                 (
-                    update_time_client,
-                    increment_time_client,
-                    destroy_all_predicted_spawns,
+                    rollback_time_client,
+                    //increment_time_client,
+                    destroy_all_predicted_spawns_on_rollback,
                     apply_deferred,
                     handle_simulated_tag_client,
                     handle_simulated_tag_for_predicted_spawns_client,
-
                     handle_pawn_input_client,
-
-                    //destroy_old_predicted_spawns,
-                    //-destroy_reconciled_predicted_spawns,
+                    apply_deferred,
                 ).chain() .in_set(FixedUpdateMainSet::Pull)
             )
-
-
 
             .add_systems(
                 FixedUpdate,
                 (
-                    //-destroy_illegal_replicated_components_on_client,
                     apply_deferred,
-                    destroy_all_predicted_spawns,
-                    apply_deferred,
-                    //increment_time_client
+                    destroy_illegal_replicated_components_on_client,
+                    increment_time_client
                 ).chain().in_set(FixedUpdateMainSet::Push)
             )
-
-            //.add_systems(FixedUpdate, handle_pawn_input_client
-            //    .in_set(FixedUpdateMainSet::Pull))
 
             .add_systems(Update, see_spawn_hash)
         ;
