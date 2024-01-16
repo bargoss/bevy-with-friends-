@@ -269,7 +269,8 @@ pub fn handle_pawn_shooting(
             let position = transform.0;
             let velocity = shoot_dir;
 
-
+            remove these, use the bundle new, and also handle the replication group stuff
+            
 
             commands.spawn_empty()
             .insert(PlayerId::new(owner_client_id))

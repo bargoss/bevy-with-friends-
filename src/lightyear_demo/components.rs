@@ -134,6 +134,7 @@ impl ProjectileBundle{
         start_tick : Tick,
         position: Vec3,
         velocity: Vec3,
+        replication_group: ReplicationGroup
     ) -> Self{
         Self{
             player_id: PlayerId::new(owner_client_id),
@@ -154,6 +155,7 @@ impl ProjectileBundle{
             },
             replicate: Replicate{
                 prediction_target: NetworkTarget::Only(vec![owner_client_id]),
+                replication_group,
                 interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
                 ..Default::default()
             },
@@ -223,11 +225,17 @@ pub fn destroy_reconciled_predicted_spawns(
 pub fn destroy_illegal_replicated_components_on_client(
     query : Query<(Entity, &SpawnHash), With<Replicate>>,
     mut commands: Commands,
+    global_time: Res<GlobalTime>
 ){
     // remove all "Replicated" components that are not in the predicted spawn index
     for (entity, spawn_hash) in query.iter() {
         log::info!("destroying illegal replicated component");
         commands.entity(entity).remove::<Replicate>();
+        commands.entity(entity).insert(Confirmed{
+            tick : global_time.simulation_tick,
+            interpolated: None,
+            predicted : None
+        });
     }
 }
 
