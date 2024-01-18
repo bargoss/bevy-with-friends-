@@ -5,7 +5,7 @@ use bevy_vector_shapes::painter::ShapePainter;
 use lightyear::client::components::ComponentSyncMode;
 use lightyear::client::prediction::{Rollback, RollbackState};
 use lightyear::prelude::client::{Confirmed, Predicted, SyncComponent};
-use lightyear::prelude::{ClientId, NetworkTarget, TickManaged};
+use lightyear::prelude::{ClientId, NetworkTarget, ReplicationGroup, TickManaged};
 use lightyear::shared::events::InputEvent;
 
 use crate::defender_game::utils;
@@ -269,36 +269,12 @@ pub fn handle_pawn_shooting(
             let position = transform.0;
             let velocity = shoot_dir;
 
-            remove these, use the bundle new, and also handle the replication group stuff
-            
-
-            commands.spawn_empty()
-            .insert(PlayerId::new(owner_client_id))
-            .insert(Projectile{
-                //start_tick : Tick(0)
-                start_tick : global_time.simulation_tick
-            })
-            .insert(SimpleVelocity{
-                value: velocity,
-            })
-            .insert(ReplicatedPosition(position))
-            .insert(TransformBundle{
-                local: Transform::from_translation(position),
-                ..Default::default()
-            })
-            .insert(CircleView{
-                radius: 0.25,
-                color: Color::RED,
-            })
-            .insert(SpawnHash{
-                hash: start_tick.0 as u32,
-                spawned_tick: start_tick,
-            })
-            .insert(Replicate{
-                prediction_target: NetworkTarget::Only(vec![owner_client_id]),
-                interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
-                ..Default::default()
-            });
+            commands.spawn(ProjectileBundle::new(
+                owner_client_id,
+                start_tick,
+                position,
+                velocity
+            ));
         }
     });
 }

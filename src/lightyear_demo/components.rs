@@ -92,6 +92,7 @@ impl PawnBundle{
             replicate: Replicate{
                 prediction_target: NetworkTarget::Only(vec![owner_client_id]),
                 interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
+                replication_group : ReplicationGroup::Group(owner_client_id + 2^16),
                 ..Default::default()
             },
             transform_bundle: TransformBundle{
@@ -133,8 +134,7 @@ impl ProjectileBundle{
         owner_client_id: ClientId,
         start_tick : Tick,
         position: Vec3,
-        velocity: Vec3,
-        replication_group: ReplicationGroup
+        velocity: Vec3
     ) -> Self{
         Self{
             player_id: PlayerId::new(owner_client_id),
@@ -155,7 +155,7 @@ impl ProjectileBundle{
             },
             replicate: Replicate{
                 prediction_target: NetworkTarget::Only(vec![owner_client_id]),
-                replication_group,
+                replication_group : ReplicationGroup::Group(owner_client_id + 2^16),
                 interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
                 ..Default::default()
             },
