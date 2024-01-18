@@ -203,6 +203,7 @@ pub fn handle_simulated_tag_for_predicted_spawns_client(
     mut commands: Commands,
 ) {
     to_tag.for_each(|entity| {
+        log::info!("tagging predicted spawn");
         commands.entity(entity).insert(Simulated);
     });
 

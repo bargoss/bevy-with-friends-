@@ -231,11 +231,6 @@ pub fn destroy_illegal_replicated_components_on_client(
     for (entity, spawn_hash) in query.iter() {
         log::info!("destroying illegal replicated component");
         commands.entity(entity).remove::<Replicate>();
-        commands.entity(entity).insert(Confirmed{
-            tick : global_time.simulation_tick,
-            interpolated: None,
-            predicted : None
-        });
     }
 }
 
@@ -251,7 +246,7 @@ pub fn see_spawn_hash(
     mut query : Query<(Entity, &SpawnHash), Changed<SpawnHash>>,
 ){
     for (entity, spawn_hash) in query.iter_mut() {
-        log::info!("see spawn hash");
+        //log::info!("see spawn hash");
         commands.entity(entity).insert(SeeSpawnHash{
             hash: spawn_hash.hash,
             spawned_tick: *spawn_hash.spawned_tick,

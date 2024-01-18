@@ -202,7 +202,7 @@ pub fn rollback_time_client(
         }
         RollbackState::ShouldRollback { current_tick } => {
             global_time.simulation_tick = current_tick;
-            //log::info!("ROLLBACK: {}", current_tick.0);
+            log::info!("ROLLBACK: {}", current_tick.0);
         }
     }
 
@@ -221,20 +221,26 @@ pub fn update_time_server(
 ){
     let tick = server.tick();
     global_time.simulation_tick = tick;
+    //global_time.simulation_tick = Tick(tick.0 + 1);
     global_time.is_server = true;
 
 }
 
 // this didnt match on the client and thats why I had prediction problems I think
 pub fn handle_projectile(
-    mut projectile_query: Query<(&mut Projectile, &SimpleVelocity, &mut ReplicatedPosition),With<Simulated>>,
+    mut projectile_query: Query<(Entity,&mut Projectile, &SimpleVelocity, &mut ReplicatedPosition),With<Simulated>>,
+    global_time: Res<GlobalTime>,
     mut commands: Commands
 ){
-    projectile_query.for_each_mut(|(mut projectile, velocity, mut replicated_position)|{
+    projectile_query.for_each_mut(|(entity, mut projectile, velocity, mut replicated_position)|{
         //transform.translation += velocity.value * 0.15;
         //replicated_position.0 += velocity.value * 0.15;
 
         replicated_position.0 += 0.15 * Vec3::new(0.0, -1.0, 0.0);
+
+        if global_time.simulation_tick.0 - projectile.start_tick.0 > 100 {
+            commands.entity(entity).despawn();
+        }
 
         //projectile.life_time -= 1;
         //if projectile.life_time <= 0 {

@@ -76,7 +76,7 @@ impl Plugin for DemoClientPlugin {
                 FixedUpdate,
                 (
                     rollback_time_client,
-                    //increment_time_client,
+                    increment_time_client,
                     destroy_all_predicted_spawns_on_rollback,
                     apply_deferred,
                     handle_simulated_tag_client,
@@ -91,7 +91,7 @@ impl Plugin for DemoClientPlugin {
                 (
                     apply_deferred,
                     destroy_illegal_replicated_components_on_client,
-                    increment_time_client
+                    //increment_time_client
                 ).chain().in_set(FixedUpdateMainSet::Push)
             )
 
