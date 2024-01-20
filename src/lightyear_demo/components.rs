@@ -6,6 +6,9 @@ use bevy::prelude::*;
 use bevy::reflect::{ReflectMut, ReflectOwned, ReflectRef, TypeInfo};
 use bevy_inspector_egui::InspectorOptions;
 use derive_more::{Add, Mul};
+use leafwing_input_manager::action_state::ActionState;
+use leafwing_input_manager::InputManagerBundle;
+use leafwing_input_manager::prelude::InputMap;
 use lightyear::client::components::Confirmed;
 use lightyear::client::prediction::{Rollback, RollbackState};
 use lightyear::prelude::*;
@@ -71,10 +74,10 @@ pub struct PawnBundle{
     pawn: Pawn,
     pawn_input: PawnInput,
     player_id: PlayerId,
-    replicated_position : ReplicatedPosition,
     replicate: Replicate,
-    transform_bundle: TransformBundle,
+    transform : Transform,
     circle_view: CircleView,
+    inputs: InputManagerBundle<PlayerActions>,
 }
 impl PawnBundle{
     pub fn new(
@@ -87,21 +90,30 @@ impl PawnBundle{
             pawn: Pawn::default(),
             pawn_input: PawnInput::default(),
             player_id: PlayerId::new(owner_client_id),
-            replicated_position : ReplicatedPosition(position),
             replicate: Replicate{
                 prediction_target: NetworkTarget::Only(vec![owner_client_id]),
                 interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
-                replication_group : ReplicationGroup::Group(owner_client_id + 1),
+                replication_group : ReplicationGroup::Group(owner_client_id),
                 ..Default::default()
             },
-            transform_bundle: TransformBundle{
-                local: Transform::from_translation(position),
+            transform: Transform{
+                translation : position,
                 ..Default::default()
             },
             circle_view: CircleView{
                 radius,
                 color
-            }
+            },
+            inputs: InputManagerBundle::<PlayerActions> {
+                action_state: ActionState::default(),
+                input_map : InputMap::new([
+                    (KeyCode::W, PlayerActions::Direction(DirectionInput::Up)),
+                    (KeyCode::S, PlayerActions::Direction(DirectionInput::Down)),
+                    (KeyCode::A, PlayerActions::Direction(DirectionInput::Left)),
+                    (KeyCode::D, PlayerActions::Direction(DirectionInput::Right)),
+                    (KeyCode::Space, PlayerActions::None), // later
+                ]),
+            },
         }
     }
 }
@@ -121,11 +133,9 @@ pub struct ProjectileBundle{
     player_id: PlayerId,
     projectile: Projectile,
     simple_velocity: SimpleVelocity,
-    replicated_position : ReplicatedPosition,
-    transform_bundle: TransformBundle,
+    transform: Transform,
     circle_view: CircleView,
     replicate: Replicate,
-    spawn_hash: SpawnHash,
 }
 
 impl ProjectileBundle{
@@ -143,9 +153,8 @@ impl ProjectileBundle{
             simple_velocity: SimpleVelocity{
                 value: velocity,
             },
-            replicated_position : ReplicatedPosition(position),
-            transform_bundle: TransformBundle{
-                local: Transform::from_translation(position),
+            transform: Transform{
+                translation : position,
                 ..Default::default()
             },
             circle_view: CircleView{
@@ -158,112 +167,6 @@ impl ProjectileBundle{
                 interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
                 ..Default::default()
             },
-            spawn_hash: SpawnHash{
-                hash: 0,
-                spawned_tick: start_tick,
-            }
-            //should_be_predicted: ShouldBePredicted{client_entity: None},
         }
     }
 }
-
-// where T is Component
-#[derive(Resource)]
-pub struct PredictedSpawnIndexing where
-{
-    pub value : HashMap<SpawnHash, Entity>,
-}
-pub trait IndexComponent where Self: Component + PartialEq{
-    fn get_value(&self) -> u32;
-}
-
-
-// in client, in "push" system_set, after global time update
-pub fn destroy_old_predicted_spawns(
-    mut commands: Commands,
-    predicted_local_spawn : Query<(Entity, &SpawnHash), Without<Replicate>>,
-    global_time: Res<GlobalTime>,
-){
-    for (entity, spawn_hash) in predicted_local_spawn.iter() {
-        let age_in_ticks = global_time.simulation_tick.0 - spawn_hash.spawned_tick.0;
-        if age_in_ticks > 200{
-            commands.entity(entity).despawn_recursive();
-        }
-    }
-}
-pub fn destroy_all_predicted_spawns_on_rollback(
-    mut commands: Commands,
-    predicted_local_spawn : Query<(Entity, &SpawnHash), (Without<Confirmed>,Without<Predicted>)>,
-    rollback: Res<Rollback>
-){
-    match rollback.state {
-        RollbackState::Default => {}
-        RollbackState::ShouldRollback { .. } => {
-            for (entity, spawn_hash) in predicted_local_spawn.iter() {
-                commands.entity(entity).despawn_recursive();
-            }
-        }
-    }
-}
-
-pub fn destroy_reconciled_predicted_spawns(
-    mut commands: Commands,
-    local : Query<(Entity, &SpawnHash), With<Simulated>>,
-    reconciled : Query<(Entity, &SpawnHash), With<Confirmed>>,
-){
-    let reconciled : HashSet<SpawnHash> = reconciled.iter().map(|(_, hash)| hash.clone()).collect();
-
-    for (entity, spawn_hash) in local.iter() {
-        if reconciled.contains(spawn_hash){
-            commands.entity(entity).despawn_recursive();
-            log::info!("--------destroying reconciled predicted spawn");
-        }
-    }
-}
-
-pub fn destroy_illegal_replicated_components_on_client(
-    query : Query<(Entity, &SpawnHash), With<Replicate>>,
-    mut commands: Commands,
-    global_time: Res<GlobalTime>
-){
-    // remove all "Replicated" components that are not in the predicted spawn index
-    for (entity, spawn_hash) in query.iter() {
-        log::info!("destroying illegal replicated component");
-        commands.entity(entity).remove::<Replicate>();
-    }
-}
-
-// destroy_old_predicted_spawns, destroy_reconciled_predicted_spawns
-#[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
-pub struct SpawnHash{
-    pub hash: u32,
-    pub spawned_tick: Tick,
-}
-
-pub fn see_spawn_hash(
-    mut commands: Commands,
-    mut query : Query<(Entity, &SpawnHash), Changed<SpawnHash>>,
-){
-    for (entity, spawn_hash) in query.iter_mut() {
-        //log::info!("see spawn hash");
-        commands.entity(entity).insert(SeeSpawnHash{
-            hash: spawn_hash.hash,
-            spawned_tick: *spawn_hash.spawned_tick,
-        });
-    }
-}
-
-#[derive(Default, Component, Debug,Reflect, InspectorOptions)]
-pub struct SeeSpawnHash{
-    pub hash: u32,
-    pub spawned_tick: u16,
-}
-
-// impl IndexComponent with this:
-//fn get_value(&self) -> u32
-//impl IndexComponent for SpawnHash{
-//    fn get_value(&self) -> u32 {
-//        // hash the hash with the tick
-//        self.hash ^ self.spawned_tick.0 as u32
-//    }
-//}

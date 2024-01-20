@@ -9,7 +9,7 @@ use lightyear::prelude::server::*;
 
 use crate::lightyear_demo::{KEY, PROTOCOL_ID, SERVER_PORT};
 use crate::lightyear_demo::components::PawnBundle;
-use crate::lightyear_demo::systems::{handle_pawn_input_server, update_time_server};
+use crate::lightyear_demo::systems::*;
 
 use super::shared::*;
 
@@ -49,16 +49,12 @@ impl Plugin for DemoServerPlugin {
         app
             .add_plugins(ServerPlugin::new(plugin_config))
             .add_plugins(SharedPlugin)
-            .init_resource::<Global>()
 
-            .add_systems(
-                FixedUpdate,
-                (
-                    handle_simulated_tag_server,
-                    handle_pawn_input_server,
-                    update_time_server
-                ).in_set(FixedUpdateMainSet::Pull)
-            )
+            //.add_systems(
+            //    FixedUpdate,
+            //    (
+            //    ).in_set(FixedUpdateMainSet::Pull)
+            //)
 
             .add_systems(Update, handle_connections)
             .add_systems(Startup, init);

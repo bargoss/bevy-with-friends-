@@ -3,12 +3,13 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::reflect::{FromType, TypeRegistration};
+use leafwing_input_manager::plugin::InputManagerSystem;
 use lightyear::client::prediction::plugin::PredictionSet;
 use lightyear::prelude::*;
 use lightyear::prelude::client::*;
 
 use crate::lightyear_demo::{CLIENT_PORT, KEY, PROTOCOL_ID, SERVER_PORT};
-use crate::lightyear_demo::components::{destroy_old_predicted_spawns, destroy_reconciled_predicted_spawns, destroy_all_predicted_spawns_on_rollback, destroy_illegal_replicated_components_on_client, see_spawn_hash, SeeSpawnHash};
+use crate::lightyear_demo::components::*;
 use crate::lightyear_demo::systems::*;
 
 use super::shared::*;
@@ -72,42 +73,33 @@ impl Plugin for DemoClientPlugin {
             .add_plugins(ClientPlugin::new(plugin_config))
             .add_systems(Startup, init)
 
-            .add_systems(
-                FixedUpdate,
-                (
-                    rollback_time_client,
-                    //increment_time_client,
-                    destroy_all_predicted_spawns_on_rollback,
-                    apply_deferred,
-                    handle_simulated_tag_client,
-                    handle_simulated_tag_for_predicted_spawns_client,
-                    handle_pawn_input_client,
-                    apply_deferred,
-                ).chain() .in_set(FixedUpdateMainSet::Pull)
-            )
+            //.add_systems(
+            //    FixedUpdate,
+            //    (
+            //
+            //    ).chain() .in_set(FixedUpdateMainSet::Pull)
+            //)
 
-            .add_systems(
-                FixedUpdate,
-                (
-                    apply_deferred,
-                    destroy_illegal_replicated_components_on_client,
-                    increment_time_client
-                ).chain().in_set(FixedUpdateMainSet::Push)
-            )
-            // cause_mis_predictions
-            .add_systems(
-                FixedUpdate,
-                (
-                    apply_deferred,
-                    //cause_mis_predictions,
-                ).chain().in_set(FixedUpdateMainSet::Update)
-            )
+            //.add_systems(
+            //    FixedUpdate,
+            //    (
+            //
+            //    ).chain().in_set(FixedUpdateMainSet::Push)
+            //)
 
-            .add_systems(Update, see_spawn_hash)
+            //.add_systems(
+            //    FixedUpdate,
+            //    (
+            //        cause_mis_predictions,
+            //    ).chain().in_set(FixedUpdateMainSet::Update)
+            //)
         ;
 
         if !self.headless{
-            app.add_systems(FixedUpdate, buffer_input.in_set(InputSystemSet::BufferInputs));
+            app.add_systems(
+                PreUpdate,
+                update_cursor_state_from_window.in_set(InputManagerSystem::ManualControl),
+            );
         }
     }
 }

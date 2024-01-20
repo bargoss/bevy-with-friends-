@@ -5,9 +5,7 @@ use bevy_inspector_egui::quick::{FilterQueryInspectorPlugin, WorldInspectorPlugi
 use bevy_vector_shapes::prelude::*;
 
 use crate::lightyear_demo::client::DemoClientPlugin;
-use crate::lightyear_demo::components::SeeSpawnHash;
 use crate::lightyear_demo::server::DemoServerPlugin;
-use crate::lightyear_demo::shared::FixedUpdateMainSet;
 use crate::lightyear_demo::systems::*;
 
 mod utils;
@@ -35,8 +33,8 @@ fn run_client(headless : bool) {
             .add_systems(Update, draw_circle_view)
             //.add_systems(PreUpdate, draw_circle_view)
             .add_plugins(WorldInspectorPlugin::new())
-            .add_plugins(FilterQueryInspectorPlugin::<With<SeeSpawnHash>>::default())
-            .register_type::<SeeSpawnHash>() // you need to register your type to display it
+            //.add_plugins(FilterQueryInspectorPlugin::<With<SeeSpawnHash>>::default())
+            //.register_type::<SeeSpawnHash>() // you need to register your type to display it
             .add_plugins(ShapePlugin::default())
         ;
     }
