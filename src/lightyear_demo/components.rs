@@ -92,7 +92,7 @@ impl PawnBundle{
             replicate: Replicate{
                 prediction_target: NetworkTarget::Only(vec![owner_client_id]),
                 interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
-                replication_group : ReplicationGroup::Group(owner_client_id + 2^16),
+                replication_group : ReplicationGroup::Group(owner_client_id + 1),
                 ..Default::default()
             },
             transform_bundle: TransformBundle{
@@ -155,7 +155,7 @@ impl ProjectileBundle{
             },
             replicate: Replicate{
                 prediction_target: NetworkTarget::Only(vec![owner_client_id]),
-                replication_group : ReplicationGroup::Group(owner_client_id + 2^16),
+                replication_group : ReplicationGroup::Group(owner_client_id),
                 interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
                 ..Default::default()
             },

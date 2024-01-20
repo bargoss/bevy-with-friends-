@@ -29,12 +29,14 @@ pub fn draw_circle_view(
             offset = Vec3::new(0.0, -1.0, 0.0);
         }
 
-        utils::draw_o(
-            replicated_position.0 + offset,
-            circle_view.radius,
-            circle_view.color,
-            &mut painter
-        );
+        if !confirmed.get(entity).is_ok(){
+            utils::draw_o(
+                replicated_position.0 + offset,
+                circle_view.radius,
+                circle_view.color,
+                &mut painter
+            );
+        }
 
         //utils::draw_o(
         //    Vec3::new(transform.translation.x, transform.translation.y, 0.0) + offset,
@@ -250,7 +252,12 @@ pub fn handle_projectile(
 }
 
 
-
+pub fn cause_mis_predictions(mut position: Query<&mut ReplicatedPosition>, mut counter: Local<i32>) {
+    for mut position in &mut position.iter_mut() {
+        position.x += 0.01 * ((*counter % 10) - 5) as f32;
+    }
+    *counter += 1;
+}
 pub fn handle_pawn_shooting(
     mut pawn_query: Query<(Entity,&mut Pawn, &PawnInput, &ReplicatedPosition, &PlayerId), With<Simulated>>,
     global_time: Res<GlobalTime>,
@@ -264,7 +271,7 @@ pub fn handle_pawn_shooting(
         let cooldown_finished = ticks_since_last_shot > cooldown;
         if pawn_input.attack && cooldown_finished {
 
-            log::info!("SHOOTING");
+            log::info!("SHOOTING: current_tick: {}, is_server: {}", current_tick.0, global_time.is_server);
             pawn.last_attack_time = current_tick;
 
             let shoot_dir = Vec3::new(0.0, -1.0, 0.0);

@@ -38,7 +38,7 @@ impl Plugin for DemoClientPlugin {
         //let client_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), self.client_port);
         let client_addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), CLIENT_PORT);
         let link_conditioner = LinkConditionerConfig {
-            incoming_latency: Duration::from_millis(200), //incoming_latency: Duration::from_millis(200),
+            incoming_latency: Duration::from_millis(80), //incoming_latency: Duration::from_millis(200),
             incoming_jitter: Duration::from_millis(0),
             incoming_loss: 0.0,
         };
@@ -76,7 +76,7 @@ impl Plugin for DemoClientPlugin {
                 FixedUpdate,
                 (
                     rollback_time_client,
-                    increment_time_client,
+                    //increment_time_client,
                     destroy_all_predicted_spawns_on_rollback,
                     apply_deferred,
                     handle_simulated_tag_client,
@@ -91,8 +91,16 @@ impl Plugin for DemoClientPlugin {
                 (
                     apply_deferred,
                     destroy_illegal_replicated_components_on_client,
-                    //increment_time_client
+                    increment_time_client
                 ).chain().in_set(FixedUpdateMainSet::Push)
+            )
+            // cause_mis_predictions
+            .add_systems(
+                FixedUpdate,
+                (
+                    apply_deferred,
+                    //cause_mis_predictions,
+                ).chain().in_set(FixedUpdateMainSet::Update)
             )
 
             .add_systems(Update, see_spawn_hash)
