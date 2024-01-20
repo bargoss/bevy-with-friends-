@@ -1,0 +1,126 @@
+name: Main
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - ".gitignore"
+      - ".github/dependabot.yml"
+      - "**.md"
+  pull_request:
+    paths-ignore:
+      - ".gitignore"
+      - ".github/dependabot.yml"
+      - "**.md"
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v4
+
+      - name: Cache crates
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Taplo
+        run: cargo install --locked taplo-cli
+
+      - name: Format
+        run: |
+          cargo fmt -p lightyear --check
+          taplo fmt --check
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config libusb-1.0-0-dev libftdi1-dev libudev-dev;
+
+      - name: Clone repo
+        uses: actions/checkout@v4
+
+      - name: Instal stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache crates
+        uses: Swatinem/rust-cache@v2
+
+      - name: Clippy
+        run: cargo clippy -p lightyear --no-deps --tests -- -D warnings -A clippy::module_inception -A clippy::wrong_self_convention -A clippy::assign-op-pattern
+
+      - name: Rustdoc
+        run: cargo rustdoc -p lightyear -- --document-private-items -D warnings
+
+  doctest:
+    name: Doctest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config libusb-1.0-0-dev libftdi1-dev libudev-dev;
+
+      - name: Clone repo
+        uses: actions/checkout@v4
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache crates
+        uses: Swatinem/rust-cache@v2
+
+      - name: Test doc
+        run: cargo test -p lightyear --doc
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install packages
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev pkg-config libusb-1.0-0-dev libftdi1-dev libudev-dev;
+        
+      - name: Clone repo
+        uses: actions/checkout@v4
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache crates
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install LLVM tools
+        run: rustup component add llvm-tools-preview
+
+      - name: Install Tarpaulin
+        run: cargo install cargo-tarpaulin
+
+      - name: Test
+        run: cargo tarpaulin --engine llvm --out lcov
+
+      - name: Upload code coverage results
+        if: github.actor != 'dependabot[bot]'
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: lcov.info
+
+  codecov:
+    name: Upload to Codecov
+    if: github.actor != 'dependabot[bot]'
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v4
+
+      - name: Download code coverage results
+        uses: actions/download-artifact@v4
+        with:
+          name: code-coverage-report
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

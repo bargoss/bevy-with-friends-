@@ -227,7 +227,7 @@ pub fn handle_simulated_tag_server(
 }
 
 
-pub(crate) fn buffer_input(mut client: ResMut<Client>, keypress: Res<Input<KeyCode>>) {
+pub(crate) fn buffer_input(mut client: ClientMut, keypress: Res<Input<KeyCode>>) {
     let mut input = PawnInputData {
         up: false,
         down: false,

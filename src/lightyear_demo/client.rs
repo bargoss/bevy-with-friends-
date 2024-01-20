@@ -115,7 +115,7 @@ impl Plugin for DemoClientPlugin {
 
 fn init(
     mut commands: Commands,
-    mut client: ResMut<Client>,
+    mut client: ClientMut,
 ) {
     //commands.spawn(Camera3dBundle::default());
     commands.spawn(Camera3dBundle {

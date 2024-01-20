@@ -6,7 +6,6 @@ use bevy::prelude::*;
 use bevy::reflect::{ReflectMut, ReflectOwned, ReflectRef, TypeInfo};
 use bevy_inspector_egui::InspectorOptions;
 use derive_more::{Add, Mul};
-use lightyear::_reexport::{ShouldBePredicted};
 use lightyear::client::components::Confirmed;
 use lightyear::client::prediction::{Rollback, RollbackState};
 use lightyear::prelude::*;

@@ -5,7 +5,7 @@ use bevy_vector_shapes::painter::ShapePainter;
 use lightyear::client::components::ComponentSyncMode;
 use lightyear::client::prediction::{Rollback, RollbackState};
 use lightyear::prelude::client::{Confirmed, Predicted, SyncComponent};
-use lightyear::prelude::{ClientId, NetworkTarget, ReplicationGroup, TickManaged};
+use lightyear::prelude::{ClientId, NetworkTarget, ReplicationGroup};
 use lightyear::shared::events::InputEvent;
 
 use crate::defender_game::utils;
@@ -193,7 +193,7 @@ pub fn handle_pawn_movement(
 //
 //}
 pub fn rollback_time_client(
-    client: Res<Client>,
+    client: Client,
     mut global_time: ResMut<GlobalTime>,
     rollback: Res<Rollback>
 ){
@@ -212,19 +212,18 @@ pub fn rollback_time_client(
     //global_time.simulation_tick = tick;
 }
 pub fn increment_time_client(
-    mut global_time: ResMut<GlobalTime>
+    //mut global_time: ResMut<GlobalTime>
 ){
-    global_time.simulation_tick.0 += 1;
+    //global_time.simulation_tick.0 += 1;
 }
 
 pub fn update_time_server(
-    server: Res<Server>,
-    mut global_time: ResMut<GlobalTime>,
+    //server: Server,
+    //mut global_time: ResMut<GlobalTime>,
 ){
-    let tick = server.tick();
-    global_time.simulation_tick = tick;
-    //global_time.simulation_tick = Tick(tick.0 + 1);
-    global_time.is_server = true;
+    //let tick = server.tick();
+    //global_time.simulation_tick = tick;
+    //global_time.is_server = true;
 
 }
 
