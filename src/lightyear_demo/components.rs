@@ -6,9 +6,6 @@ use bevy::prelude::*;
 use bevy::reflect::{ReflectMut, ReflectOwned, ReflectRef, TypeInfo};
 use bevy_inspector_egui::InspectorOptions;
 use derive_more::{Add, Mul};
-use leafwing_input_manager::action_state::ActionState;
-use leafwing_input_manager::InputManagerBundle;
-use leafwing_input_manager::prelude::InputMap;
 use lightyear::client::components::Confirmed;
 use lightyear::client::prediction::{Rollback, RollbackState};
 use lightyear::prelude::*;
@@ -17,9 +14,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::lightyear_demo::shared::*;
 
-#[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq, Deref, DerefMut)]
+#[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct Pawn{
     pub last_attack_time : Tick,
+    pub moving : bool
 }
 
 impl Add for Pawn{
@@ -27,6 +25,7 @@ impl Add for Pawn{
     fn add(self, rhs: Self) -> Self::Output {
         Self{
             last_attack_time: rhs.last_attack_time,
+            moving : false
         }
     }
 }
@@ -36,6 +35,7 @@ impl Mul<f32> for Pawn{
     fn mul(self, rhs: f32) -> Self::Output {
         Self{
             last_attack_time: self.last_attack_time,
+            moving : self.moving
         }
     }
 }
@@ -77,7 +77,6 @@ pub struct PawnBundle{
     replicate: Replicate,
     transform : Transform,
     circle_view: CircleView,
-    inputs: InputManagerBundle<PlayerActions>,
 }
 impl PawnBundle{
     pub fn new(
@@ -104,16 +103,6 @@ impl PawnBundle{
                 radius,
                 color
             },
-            inputs: InputManagerBundle::<PlayerActions> {
-                action_state: ActionState::default(),
-                input_map : InputMap::new([
-                    (KeyCode::W, PlayerActions::Direction(DirectionInput::Up)),
-                    (KeyCode::S, PlayerActions::Direction(DirectionInput::Down)),
-                    (KeyCode::A, PlayerActions::Direction(DirectionInput::Left)),
-                    (KeyCode::D, PlayerActions::Direction(DirectionInput::Right)),
-                    (KeyCode::Space, PlayerActions::None), // later
-                ]),
-            },
         }
     }
 }
@@ -135,7 +124,7 @@ pub struct ProjectileBundle{
     simple_velocity: SimpleVelocity,
     transform: Transform,
     circle_view: CircleView,
-    replicate: Replicate,
+    //replicate: Replicate,
 }
 
 impl ProjectileBundle{
@@ -161,12 +150,12 @@ impl ProjectileBundle{
                 radius: 0.25,
                 color: Color::RED,
             },
-            replicate: Replicate{
-                prediction_target: NetworkTarget::Only(vec![owner_client_id]),
-                replication_group : ReplicationGroup::Group(owner_client_id),
-                interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
-                ..Default::default()
-            },
+            //replicate: Replicate{
+            //    prediction_target: NetworkTarget::Only(vec![owner_client_id]),
+            //    replication_group : ReplicationGroup::Group(owner_client_id),
+            //    interpolation_target: NetworkTarget::AllExcept(vec![owner_client_id]),
+            //    ..Default::default()
+            //},
         }
     }
 }

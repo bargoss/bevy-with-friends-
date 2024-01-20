@@ -47,6 +47,14 @@ impl Plugin for DemoServerPlugin {
         let plugin_config = PluginConfig::new(config, io, protocol());
 
         app
+            .init_resource::<Global>()
+
+            .add_systems(
+                FixedUpdate,
+                (
+                    handle_pawn_input_server,
+                ).in_set(FixedUpdateMainSet::Pull)
+            )
             .add_plugins(ServerPlugin::new(plugin_config))
             .add_plugins(SharedPlugin)
 

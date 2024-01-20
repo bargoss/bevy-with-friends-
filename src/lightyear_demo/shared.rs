@@ -1,4 +1,3 @@
-use leafwing_input_manager::prelude::InputMap;
 use std::time::Duration;
 
 use bevy::input::Input;
@@ -6,28 +5,29 @@ use bevy::log::Level;
 use bevy::prelude::{App, Bundle, Color, Commands, Component, default, Deref, DerefMut, Entity, FixedUpdate, IntoSystemConfigs, KeyCode, Or, Plugin, Query, Reflect, Res, ResMut, Resource, SystemSet, Transform, Update, Vec2, Vec3, With, Without};
 use bevy::prelude::IntoSystemSetConfigs;
 use derive_more::{Add, Mul};
-use leafwing_input_manager::Actionlike;
 use lightyear::prelude::*;
-use lightyear::prelude::client::{Confirmed, Interpolated, LeafwingInputConfig, LeafwingInputPlugin, Predicted};
+use lightyear::prelude::client::{Confirmed, Interpolated, Predicted};
 use serde::{Deserialize, Serialize};
 
 use crate::lightyear_demo::components::*;
 use crate::lightyear_demo::systems::*;
 
-use leafwing_input_manager::prelude::ActionState;
 use lightyear::utils::bevy::TransformLinearInterpolation;
 
-//use crate::lightyear_demo::systems::pawn_movement;
-//use crate::lightyear_demo::systems;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
-pub struct PawnInputData {
-    pub(crate) up: bool,
-    pub(crate) down: bool,
-    pub(crate) left: bool,
-    pub(crate) right: bool,
-    pub(crate) attack: bool,
+#[derive(Default, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub enum Inputs {
+    #[default]
+    None,
+    PawnInputData(PawnInputData),
 }
+#[derive(Default, Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub struct PawnInputData{
+    pub direction_input : DirectionInput,
+    pub attack : bool,
+}
+
+impl UserAction for Inputs {}
 
 #[derive(Message, Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct Message1(pub usize);
@@ -108,21 +108,6 @@ impl DirectionInput {
     }
 }
 
-#[derive(Default, Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy, Hash, Reflect, Actionlike)]
-pub enum PlayerActions {
-    #[default]
-    None,
-    Direction(DirectionInput),
-}
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy, Hash, Reflect, Actionlike)]
-pub enum AdminActions {
-    None
-}
-
-impl LeafwingUserAction for PlayerActions {}
-impl LeafwingUserAction for AdminActions {}
-
-
 #[derive(Channel)]
 pub struct Channel1;
 
@@ -131,9 +116,7 @@ protocolize! {
     Self = MyProtocol,
     Message = Messages,
     Component = Components,
-    Input = (),
-    LeafwingInput1 = PlayerActions,
-    LeafwingInput2 = AdminActions,
+    Input = Inputs,
 }
 
 pub(crate) fn protocol() -> MyProtocol {
@@ -176,26 +159,6 @@ pub enum FixedUpdateMainSet {
 pub struct SharedPlugin;
 impl Plugin for SharedPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(InputMap::<AdminActions>::new([
-            (KeyCode::M, AdminActions::None),
-            (KeyCode::R, AdminActions::None),
-        ]));
-        app.insert_resource(InputMap::<PlayerActions>::new([
-            (KeyCode::M, PlayerActions::None),
-            (KeyCode::R, PlayerActions::None),
-        ]));
-
-        app.add_plugins(LeafwingInputPlugin::<MyProtocol, PlayerActions>::new(
-            LeafwingInputConfig::<PlayerActions> {
-                ..default()
-            },
-        ));
-        app.add_plugins(LeafwingInputPlugin::<MyProtocol, AdminActions>::new(
-            LeafwingInputConfig::<AdminActions> {
-                ..default()
-            },
-        ));
-
         app.configure_sets(
             FixedUpdate,
             (

@@ -3,7 +3,6 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy::reflect::{FromType, TypeRegistration};
-use leafwing_input_manager::plugin::InputManagerSystem;
 use lightyear::client::prediction::plugin::PredictionSet;
 use lightyear::prelude::*;
 use lightyear::prelude::client::*;
@@ -73,12 +72,12 @@ impl Plugin for DemoClientPlugin {
             .add_plugins(ClientPlugin::new(plugin_config))
             .add_systems(Startup, init)
 
-            //.add_systems(
-            //    FixedUpdate,
-            //    (
-            //
-            //    ).chain() .in_set(FixedUpdateMainSet::Pull)
-            //)
+            .add_systems(
+                FixedUpdate,
+                (
+                    handle_pawn_input_client
+                ).chain() .in_set(FixedUpdateMainSet::Pull)
+            )
 
             //.add_systems(
             //    FixedUpdate,
@@ -96,10 +95,7 @@ impl Plugin for DemoClientPlugin {
         ;
 
         if !self.headless{
-            app.add_systems(
-                PreUpdate,
-                update_cursor_state_from_window.in_set(InputManagerSystem::ManualControl),
-            );
+            app.add_systems(FixedUpdate, buffer_input.in_set(InputSystemSet::BufferInputs));
         }
     }
 }
