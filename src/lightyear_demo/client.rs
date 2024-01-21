@@ -75,23 +75,17 @@ impl Plugin for DemoClientPlugin {
             .add_systems(
                 FixedUpdate,
                 (
-                    handle_pawn_input_client
+                    handle_pawn_input_client,
                 ).chain() .in_set(FixedUpdateMainSet::Pull)
             )
 
             //.add_systems(
-            //    FixedUpdate,
+            //    Update,
             //    (
-            //
-            //    ).chain().in_set(FixedUpdateMainSet::Push)
+            //        cause_mis_predictions
+            //    ).chain()
             //)
 
-            //.add_systems(
-            //    FixedUpdate,
-            //    (
-            //        cause_mis_predictions,
-            //    ).chain().in_set(FixedUpdateMainSet::Update)
-            //)
         ;
 
         if !self.headless{

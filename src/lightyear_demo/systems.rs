@@ -73,7 +73,7 @@ pub fn handle_projectile(
 
 pub fn cause_mis_predictions(mut transforms: Query<&mut Transform>, mut counter: Local<i32>) {
     for mut transform in &mut transforms.iter_mut() {
-        transform.translation += 0.01 * ((*counter % 10) - 5) as f32;
+        transform.translation += 0.01 * ((*counter % 10) as f32 - 4.5);
     }
     *counter += 1;
 }
@@ -91,20 +91,19 @@ pub fn handle_pawn_shooting(
         let cooldown = 50;
         let cooldown_finished = ticks_since_last_shot > cooldown;
 
-        let moving_prev = pawn.moving;
-        if(pawn_input.movement_direction != Vec3::ZERO){
-            pawn.moving = true;
-        }
-        else{
-            pawn.moving = false;
-        }
+        //let moving_prev = pawn.moving;
+        //if(pawn_input.movement_direction != Vec3::ZERO){
+        //    pawn.moving = true;
+        //}
+        //else{
+        //    pawn.moving = false;
+        //}
+        //let mut shoot_now = false;
+        //if(moving_prev != pawn.moving){
+        //    shoot_now = true;
+        //}
 
-        let mut shoot_now = false;
-        if(moving_prev != pawn.moving){
-            shoot_now = true;
-        }
-
-        //let shoot_now = pawn_input.attack && cooldown_finished;
+        let shoot_now = pawn_input.attack && cooldown_finished;
         if shoot_now {
 
             pawn.last_attack_time = current_tick;
