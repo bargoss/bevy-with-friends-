@@ -11,6 +11,7 @@ use crate::lightyear_demo::systems::*;
 mod utils;
 mod defender_game;
 mod lightyear_demo;
+mod space_game;
 
 const GRID_LEN: f32 = 5.0;
 
