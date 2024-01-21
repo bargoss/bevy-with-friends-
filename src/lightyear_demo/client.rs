@@ -1,17 +1,14 @@
 use std::net::{Ipv4Addr, SocketAddr};
 use std::time::Duration;
-
 use bevy::prelude::*;
-use bevy::reflect::{FromType, TypeRegistration};
-use lightyear::client::prediction::plugin::PredictionSet;
 use lightyear::prelude::*;
 use lightyear::prelude::client::*;
 
 use crate::lightyear_demo::{CLIENT_PORT, KEY, PROTOCOL_ID, SERVER_PORT};
-use crate::lightyear_demo::components::*;
 use crate::lightyear_demo::systems::*;
 
-use super::shared::*;
+
+use super::shared_old::*;
 
 // define a bevy plugin
 
@@ -64,8 +61,6 @@ impl Plugin for DemoClientPlugin {
                 .with_delay(InterpolationDelay::default().with_send_interval_ratio(2.0)),
         };
         let plugin_config = PluginConfig::new(config, io, protocol(), auth);
-        //app.add_plugins(ClientPlugin::new(plugin_config));
-
 
         app
             .add_plugins(SharedPlugin)
@@ -78,14 +73,6 @@ impl Plugin for DemoClientPlugin {
                     handle_pawn_input_client,
                 ).chain() .in_set(FixedUpdateMainSet::Pull)
             )
-
-            //.add_systems(
-            //    Update,
-            //    (
-            //        cause_mis_predictions
-            //    ).chain()
-            //)
-
         ;
 
         if !self.headless{

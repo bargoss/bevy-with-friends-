@@ -9,7 +9,7 @@ use lightyear::prelude::*;
 use lightyear::prelude::client::{Confirmed, Interpolated, Predicted};
 use serde::{Deserialize, Serialize};
 
-use crate::lightyear_demo::components::*;
+use crate::lightyear_demo::components_old::*;
 use crate::lightyear_demo::systems::*;
 
 use lightyear::utils::bevy::TransformLinearInterpolation;

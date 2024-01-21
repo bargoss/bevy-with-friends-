@@ -8,10 +8,10 @@ use lightyear::prelude::*;
 use lightyear::prelude::server::*;
 
 use crate::lightyear_demo::{KEY, PROTOCOL_ID, SERVER_PORT};
-use crate::lightyear_demo::components::PawnBundle;
+use crate::lightyear_demo::components_old::PawnBundle;
 use crate::lightyear_demo::systems::*;
 
-use super::shared::*;
+use super::shared_old::*;
 
 // define a bevy plugin
 
@@ -29,13 +29,7 @@ impl Plugin for DemoServerPlugin {
             incoming_jitter: Duration::from_millis(0),
             incoming_loss: 0.00,
         };
-        //let transport = match self.transport {
-        //    Transports::Udp => TransportConfig::UdpSocket(server_addr),
-        //    Transports::Webtransport => TransportConfig::WebTransportServer {
-        //        server_addr,
-        //        certificate: Certificate::self_signed(&["localhost"]),
-        //    },
-        //};
+
         let transport = TransportConfig::UdpSocket(server_addr);
         let io =
             Io::from_config(IoConfig::from_transport(transport).with_conditioner(link_conditioner));
@@ -58,12 +52,6 @@ impl Plugin for DemoServerPlugin {
             .add_plugins(ServerPlugin::new(plugin_config))
             .add_plugins(SharedPlugin)
 
-            //.add_systems(
-            //    FixedUpdate,
-            //    (
-            //    ).in_set(FixedUpdateMainSet::Pull)
-            //)
-
             .add_systems(Update, handle_connections)
             .add_systems(Startup, init);
     }
@@ -74,38 +62,6 @@ impl Plugin for DemoServerPlugin {
 #[derive(Resource, Default)]
 pub struct Global {
     pub client_id_to_entity_id: HashMap<ClientId, Entity>,
-}
-
-fn handle_connections(
-    mut connections: EventReader<ConnectEvent>,
-    mut disconnections: EventReader<DisconnectEvent>,
-    mut global: ResMut<Global>,
-    mut commands: Commands,
-) {
-    for connection in connections.read() {
-        let client_id = connection.context();
-        let h = (((client_id * 30) % 360) as f32) / 360.0;
-        let s = 0.8;
-        let l = 0.5;
-        let entity = commands.spawn(PawnBundle::new(
-            // psuedo random pos
-            Vec3::new((client_id % 10) as f32, (client_id / 10) as f32, 0.0),
-            0.5,
-            Color::hsl(h, s, l),
-            *client_id,
-        ));
-        log::info!("SPAWNED CLIENT ENTITY");
-        // Add a mapping from client id to entity id
-        global
-            .client_id_to_entity_id
-            .insert(*client_id, entity.id());
-    }
-    for disconnection in disconnections.read() {
-        let client_id = disconnection.context();
-        if let Some(entity) = global.client_id_to_entity_id.remove(client_id) {
-            commands.entity(entity).despawn();
-        }
-    }
 }
 
 /*

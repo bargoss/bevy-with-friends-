@@ -12,7 +12,7 @@ use lightyear::prelude::*;
 use lightyear::prelude::client::{Interpolated, LerpFn, Predicted};
 use serde::{Deserialize, Serialize};
 
-use crate::lightyear_demo::shared::*;
+use crate::lightyear_demo::shared_old::*;
 
 #[derive(Default,Component, Message, Deserialize, Serialize, Clone, Debug, PartialEq)]
 pub struct Pawn{
